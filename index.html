@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>PKG3 PI SUPT INDEX · ISO · TAG · TYPE 조회기</title>
+<title>대공 PKG3 SUPT 조회</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -20,7 +20,7 @@ body {
   margin: 0 auto;
   background: #ffffff;
   min-height: 100vh;
-  padding: 12px 14px 32px;
+  padding: 12px 14px 40px;
 }
 
 /* 상단 고정 바 */
@@ -33,7 +33,7 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-/* 타이틀 */
+/* 제목 */
 .title-row {
   display: flex;
   align-items: center;
@@ -43,7 +43,7 @@ body {
 }
 h1 {
   margin: 0;
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
 }
 .badge-fast {
@@ -61,7 +61,7 @@ h1 {
   display: flex;
   flex-wrap: wrap;
   gap: 10px 14px;
-  margin: 10px 0 6px;
+  margin: 10px 0 8px;
 }
 
 .search-modes label {
@@ -82,7 +82,6 @@ h1 {
 /* 검색 입력 */
 .search-box {
   width: 100%;
-  margin: 4px 0 6px;
 }
 
 .search-input-wrapper {
@@ -114,49 +113,6 @@ h1 {
   opacity: 0.9;
 }
 
-/* 붙여넣기 박스 */
-.paste-wrapper {
-  margin: 10px 2px 16px;
-  font-size: 12px;
-  color: #555;
-}
-#pasteToggleBtn {
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 6px;
-  border: 1px solid #bbb;
-  background: #fff;
-  cursor: pointer;
-}
-#pasteToggleBtn:hover {
-  background: #f5f5f5;
-}
-#pasteBox {
-  margin-top: 6px;
-}
-#pasteInput {
-  width: 100%;
-  height: 140px;
-  font-size: 12px;
-  padding: 8px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  font-family: "Consolas","Courier New",monospace;
-}
-#applyPaste {
-  margin-top: 6px;
-  padding: 6px 12px;
-  font-size: 12px;
-  border-radius: 6px;
-  border: 1px solid #2563eb;
-  background: #2563eb;
-  color: #fff;
-  cursor: pointer;
-}
-#applyPaste:hover {
-  background: #1d4ed8;
-}
-
 /* 테이블 */
 table {
   width: 100%;
@@ -166,7 +122,7 @@ table {
 thead {
   background: #f7f7f9;
   position: sticky;
-  top: 108px; /* 상단바 높이에 맞춰 조정 */
+  top: 108px;
   z-index: 998;
 }
 th, td {
@@ -182,7 +138,7 @@ tbody tr:hover {
 
 /* 모바일 대응 */
 @media (max-width: 600px) {
-  h1 { font-size: 16px; }
+  h1 { font-size: 18px; }
   #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; }
 }
 </style>
@@ -194,38 +150,25 @@ tbody tr:hover {
   <!-- 상단 고정 영역 -->
   <div class="top-bar">
     <div class="title-row">
-      <h1>INDEX · ISO · TAG · TYPE 조회기</h1>
-      <div class="badge-fast">현장 태그 / 타입 빠른 조회</div>
+      <h1>대공 PKG3 SUPT 조회</h1>
+      <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
     <!-- 라디오 선택 -->
     <div class="search-modes">
-      <label><input type="radio" name="mode" value="index" checked><span>INDEX로 검색</span></label>
-      <label><input type="radio" name="mode" value="iso"><span>ISO로 검색</span></label>
-      <label><input type="radio" name="mode" value="tag"><span>TAG로 검색</span></label>
-      <label><input type="radio" name="mode" value="type"><span>TYPE으로 검색</span></label>
+      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
+      <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
+      <label><input type="radio" name="mode" value="tag"><span>TAG 검색</span></label>
+      <label><input type="radio" name="mode" value="type"><span>TYPE 검색</span></label>
     </div>
 
-    <!-- 검색박스 -->
+    <!-- 검색입력 -->
     <div class="search-box">
       <div class="search-input-wrapper">
         <input id="searchInput" type="text"
-               placeholder="예: 0001, 2152-01-007-01, 211-TRP014, TRP-DAS18 등" />
+               placeholder="예: 0001, 007-01, TRP014, DSP-S18 등" />
         <button id="clearBtn" class="clear-btn">×</button>
       </div>
-    </div>
-  </div>
-
-  <!-- 데이터 붙여넣기 영역 (관리용) -->
-  <div class="paste-wrapper">
-    <button id="pasteToggleBtn">📌 데이터 붙여넣기 (엑셀에서 복사 → 여기 붙여넣기)</button>
-    <div id="pasteBox" style="display:none;">
-      <textarea id="pasteInput"
-        placeholder="예시)
-0001	S211-10_SB_ISO-3TK-CFL-2152-01-007-01	211-DS004	DSP-S18-250
-0001	S211-10_SB_ISO-3TK-CFL-2152-01-007-01	211-TRP014	TRP-DAS18-CG-12
-0002	S211-10_SB_ISO-3TK-CFL-2152-01-007-02	미발주품목	2152-SS-003"></textarea>
-      <button id="applyPaste">적용하기</button>
     </div>
   </div>
 
@@ -235,8 +178,8 @@ tbody tr:hover {
       <tr>
         <th style="width:80px;">INDEX</th>
         <th>ISO 도면번호</th>
-        <th style="width:170px;">TAG</th>
-        <th style="width:170px;">TYPE</th>
+        <th style="width:160px;">TAG</th>
+        <th style="width:160px;">TYPE</th>
       </tr>
     </thead>
     <tbody id="resultBody"></tbody>
@@ -245,14 +188,14 @@ tbody tr:hover {
 </div>
 
 <script>
-// =======================================
-//   데이터 저장 배열 (처음엔 빈 상태)
-// =======================================
+// -------------------------------------------
+// suptdata.txt → 자동 로드할 배열
+// -------------------------------------------
 let rawData = [];
 
-// =======================================
-//   공통 파싱 함수 (txt / 붙여넣기 둘 다 사용)
-// =======================================
+// -------------------------------------------
+// 텍스트 파싱 (공백/탭/쉼표 자동 인식)
+// -------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
@@ -260,45 +203,39 @@ function parseTextToData(text) {
   lines.forEach(line => {
     const trimmed = line.trim();
     if (!trimmed) return;
-    // 탭, 쉼표, 여러 칸 공백 모두 구분자로 처리
+
     let cols = trimmed.split(/[\t, ]+/g);
     if (cols.length < 4) return;
 
-    const index = cols[0];
-    const iso   = cols[1];
-    const tag   = cols[2];
-    const type  = cols.slice(3).join(" ");
-
-    parsed.push([index, iso, tag, type]);
+    parsed.push([
+      cols[0],
+      cols[1],
+      cols[2],
+      cols.slice(3).join(" ")
+    ]);
   });
 
   return parsed;
 }
 
-// =======================================
-//   txt 파일에서 데이터 로딩
-// =======================================
-async function loadDataFromTxt() {
+// -------------------------------------------
+// suptdata.txt 로드
+// -------------------------------------------
+async function loadData() {
   try {
-    // 캐시 방지용 파라미터(업데이트 바로 반영)
-    const res = await fetch('suptdata.txt?_=' + Date.now());
-    if (!res.ok) throw new Error('데이터 파일을 불러오지 못했습니다.');
+    const res = await fetch("suptdata.txt?_=" + Date.now());
     const text = await res.text();
-    const parsed = parseTextToData(text);
-    if (parsed.length === 0) {
-      console.warn('suptdata 내용이 비어있거나 형식을 읽지 못했습니다.');
-    }
-    rawData = parsed;
+    rawData = parseTextToData(text);
     renderList();
   } catch (e) {
     console.error(e);
-    alert('suptdata를 불러오지 못했습니다');
+    alert("suptdata.txt 파일을 불러오지 못했습니다.");
   }
 }
 
-// =======================================
-//   필터 + 렌더링
-// =======================================
+// -------------------------------------------
+// 필터 + 렌더링
+// -------------------------------------------
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -308,6 +245,7 @@ function renderList() {
 
   const filtered = rawData.filter(row => {
     if (!keyword) return true;
+
     const index = row[0].toLowerCase();
     const iso   = row[1].toLowerCase();
     const tag   = row[2].toLowerCase();
@@ -317,8 +255,6 @@ function renderList() {
     if (mode === "iso")   return iso.includes(keyword);
     if (mode === "tag")   return tag.includes(keyword);
     if (mode === "type")  return type.includes(keyword);
-
-    return false;
   });
 
   filtered.forEach(row => {
@@ -333,54 +269,23 @@ function renderList() {
   });
 }
 
-// 검색 입력 → 자동 필터
+// 입력 즉시 필터
 document.getElementById("searchInput").addEventListener("input", renderList);
 
 // X 버튼
 document.getElementById("clearBtn").addEventListener("click", () => {
-  const input = document.getElementById("searchInput");
-  input.value = "";
-  input.focus();
+  searchInput.value = "";
+  searchInput.focus();
   renderList();
 });
 
-// 라디오 변경 시 재필터
+// 라디오 변경 시 필터
 document.querySelectorAll('input[name="mode"]').forEach(r => {
   r.addEventListener("change", renderList);
 });
 
-// =======================================
-//   데이터 붙여넣기 (관리자용)
-// =======================================
-
-// 붙여넣기 박스 토글
-document.getElementById("pasteToggleBtn").addEventListener("click", () => {
-  const box = document.getElementById("pasteBox");
-  box.style.display = (box.style.display === "none" || box.style.display === "") ? "block" : "none";
-});
-
-// "적용하기" → rawData 덮어쓰기
-document.getElementById("applyPaste").addEventListener("click", () => {
-  const txt = document.getElementById("pasteInput").value;
-  if (!txt.trim()) {
-    alert("엑셀에서 복사한 데이터를 붙여넣어 주세요.");
-    return;
-  }
-  const newData = parseTextToData(txt);
-  if (newData.length === 0) {
-    alert("데이터 형식을 인식하지 못했습니다.\nINDEX ISO TAG TYPE 순서로 4칸 이상인지 확인해 주세요.");
-    return;
-  }
-
-  rawData = newData;
-  renderList();
-  alert("데이터가 이 페이지에서 성공적으로 업데이트되었습니다!\n(suptdata는 따로 수정해 주세요)");
-});
-
-// =======================================
-//   페이지 로드시 suptdata에서 자동 로드
-// =======================================
-loadDataFromTxt();
+// 페이지 로드시 suptdata.txt 로딩
+loadData();
 </script>
 
 </body>
