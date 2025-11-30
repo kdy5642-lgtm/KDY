@@ -24,8 +24,15 @@ body {
 h1 {
   font-size: 22px;
   font-weight: 700;
-  margin-bottom: 30px;
+  margin-bottom: 10px;
   color: #222;
+}
+
+/* 날짜 표시 */
+#dateInfo {
+  font-size: 14px;
+  margin-bottom: 25px;
+  color: #444;
 }
 
 /* 메뉴 버튼 */
@@ -55,12 +62,15 @@ h1 {
 
   <h1>대공 기계/배관 현장작업 확인용</h1>
 
+  <!-- 적용기준 날짜 표시 영역 -->
+  <div id="dateInfo">불러오는 중...</div>
+
   <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/piping.html">
     ISO DWG REVISION 정보
   </a>
 
   <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/wir.html">
-    WIR 정보
+    WIR (용접된 조인트) 정보
   </a>
 
   <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/supt.html">
@@ -68,6 +78,21 @@ h1 {
   </a>
 
 </div>
+
+<script>
+// date.txt 읽어서 화면에 표시
+async function loadDateInfo() {
+  try {
+    const res = await fetch("date.txt?_=" + Date.now());
+    const text = await res.text();
+    document.getElementById("dateInfo").innerText = text.trim();
+  } catch (e) {
+    document.getElementById("dateInfo").innerText = "적용기준: 불러오기 실패";
+  }
+}
+
+loadDateInfo();
+</script>
 
 </body>
 </html>
