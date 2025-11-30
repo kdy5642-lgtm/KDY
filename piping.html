@@ -128,6 +128,7 @@ thead {
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
+  text-align: center;  /* ✔ 리스트 중앙 정렬 적용 */
 }
 tbody tr:nth-child(odd) {
   background: #fcfcff;
@@ -286,8 +287,8 @@ function renderList() {
 
     if (mode === "index") return index.includes(keyword);
     if (mode === "iso")   return iso.includes(keyword);
-    if (mode === "tag")   return tag.includes(keyword);
-    if (mode === "type")  return type.includes(keyword);
+    if (mode === "Rev")   return tag.includes(keyword);
+    if (mode === "Date")  return type.includes(keyword);
   });
 
   filtered.forEach(row => {
