@@ -128,7 +128,7 @@ thead {
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
-  text-align: center;  /* ✔ 리스트 중앙 정렬 적용 */
+  text-align: center;
 }
 tbody tr:nth-child(odd) {
   background: #fcfcff;
@@ -228,7 +228,7 @@ tbody tr:hover {
 let rawData = [];
 
 // -------------------------------------------
-// 텍스트 파싱 (+ 소문자 검색 인덱스 미리 생성)
+// 텍스트 파싱 (+ 소문자 캐시)
 // -------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
@@ -238,7 +238,7 @@ function parseTextToData(text) {
     const trimmed = lines[i].trim();
     if (!trimmed) continue;
 
-    const cols = trimmed.split(/[\t, ]+/g);
+    let cols = trimmed.split(/[\t, ]+/g);
     if (cols.length < 4) continue;
 
     const c0 = cols[0];
@@ -248,7 +248,6 @@ function parseTextToData(text) {
 
     const row = [c0, c1, c2, c3];
 
-    // 🔥 검색 속도 향상을 위한 소문자 캐시
     row._lc = [
       String(c0).toLowerCase(),
       String(c1).toLowerCase(),
@@ -278,44 +277,45 @@ async function loadData() {
 }
 
 // -------------------------------------------
-// 필터 + 렌더링 (최적화 버전)
+// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시)
 // -------------------------------------------
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
+  const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
+  const normKw = rawKw.replace(/[-_\s]/g, "");  // -, _, 공백 제거
   const tbody = document.getElementById("resultBody");
 
-  // 기존 내용 제거
+  const hasKeyword = rawKw.length > 0;
+
   tbody.innerHTML = "";
-
-  // 검색어 없으면 전체 노출
-  const hasKeyword = keyword.length > 0;
-
-  // DOM 조각에 모아서 한 번에 렌더 (성능 UP)
   const frag = document.createDocumentFragment();
 
   for (let i = 0; i < rawData.length; i++) {
     const row = rawData[i];
-    const lc = row._lc || [
-      String(row[0]).toLowerCase(),
-      String(row[1]).toLowerCase(),
-      String(row[2]).toLowerCase(),
-      String(row[3]).toLowerCase()
-    ];
+    const lc = row._lc;
 
     if (hasKeyword) {
       const index = lc[0];
       const iso   = lc[1];
-      const tag   = lc[2];
-      const type  = lc[3];
+      const rev   = lc[2];
+      const date  = lc[3];
+
+      const indexNorm = index.replace(/[-_\s]/g, "");
+      const isoNorm   = iso.replace(/[-_\s]/g, "");
+      const revNorm   = rev.replace(/[-_\s]/g, "");
+      const dateNorm  = date.replace(/[-_\s]/g, "");
 
       let ok = false;
-      if (mode === "index") ok = index.includes(keyword);
-      else if (mode === "iso")  ok = iso.includes(keyword);
-      else if (mode === "Rev")  ok = tag.includes(keyword);
-      else if (mode === "Date") ok = type.includes(keyword);
+      if (mode === "index")
+        ok = index.includes(rawKw) || indexNorm.includes(normKw);
+      else if (mode === "iso")
+        ok = iso.includes(rawKw) || isoNorm.includes(normKw);
+      else if (mode === "Rev")
+        ok = rev.includes(rawKw) || revNorm.includes(normKw);
+      else if (mode === "Date")
+        ok = date.includes(rawKw) || dateNorm.includes(normKw);
 
-      if (!ok) continue; // 이 행은 패스
+      if (!ok) continue;
     }
 
     const tr = document.createElement("tr");
@@ -331,15 +331,13 @@ function renderList() {
   tbody.appendChild(frag);
 }
 
-// -------------------------------------------
-// 입력 이벤트: 디바운스 걸어서 렉 방지
-// -------------------------------------------
+// 2초 디바운스
 let filterTimer = null;
 const searchInputEl = document.getElementById("searchInput");
 
 searchInputEl.addEventListener("input", () => {
   if (filterTimer) clearTimeout(filterTimer);
-  filterTimer = setTimeout(renderList, 150); // 150ms 딜레이 후 한 번만 필터
+  filterTimer = setTimeout(renderList, 2000);
 });
 
 // X 버튼
@@ -354,7 +352,7 @@ document.querySelectorAll('input[name="mode"]').forEach(r => {
   r.addEventListener("change", renderList);
 });
 
-// 페이지 로드시 pipingdata.txt 로딩
+// 페이지 로드시 데이터 로딩
 loadData();
 </script>
 
