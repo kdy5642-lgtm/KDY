@@ -128,7 +128,7 @@ thead {
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
-  text-align: center;  /* ← ★ 가운데 정렬 추가 */
+  text-align: center;  /* ← ★ 가운데 정렬 */
 }
 tbody tr:nth-child(odd) {
   background: #fcfcff;
@@ -228,26 +228,36 @@ tbody tr:hover {
 let rawData = [];
 
 // -------------------------------------------
-// 텍스트 파싱
+// 텍스트 파싱 (+ 소문자 검색 인덱스 캐시)
 // -------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
 
-  lines.forEach(line => {
-    const trimmed = line.trim();
-    if (!trimmed) return;
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) continue;
 
     let cols = trimmed.split(/[\t, ]+/g);
-    if (cols.length < 4) return;
+    if (cols.length < 4) continue;
 
-    parsed.push([
-      cols[0],
-      cols[1],
-      cols[2],
-      cols.slice(3).join(" ")
-    ]);
-  });
+    const c0 = cols[0];
+    const c1 = cols[1];
+    const c2 = cols[2];
+    const c3 = cols.slice(3).join(" ");
+
+    const row = [c0, c1, c2, c3];
+
+    // 🔥 검색 속도 향상을 위한 소문자 캐시
+    row._lc = [
+      String(c0).toLowerCase(),
+      String(c1).toLowerCase(),
+      String(c2).toLowerCase(),
+      String(c3).toLowerCase()
+    ];
+
+    parsed.push(row);
+  }
 
   return parsed;
 }
@@ -268,30 +278,45 @@ async function loadData() {
 }
 
 // -------------------------------------------
-// 필터 + 렌더링
+// 필터 + 렌더링 (최적화 버전)
 // -------------------------------------------
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const keyword = document.getElementById("searchInput").value.trim().toLowerCase();
   const tbody = document.getElementById("resultBody");
 
+  const hasKeyword = keyword.length > 0;
+
+  // 기존 내용 제거
   tbody.innerHTML = "";
 
-  const filtered = rawData.filter(row => {
-    if (!keyword) return true;
+  // DOM 조각에 모아서 한 번에 렌더 (성능 UP)
+  const frag = document.createDocumentFragment();
 
-    const index = row[0].toLowerCase();
-    const iso   = row[1].toLowerCase();
-    const tag   = row[2].toLowerCase();
-    const type  = row[3].toLowerCase();
+  for (let i = 0; i < rawData.length; i++) {
+    const row = rawData[i];
+    const lc = row._lc || [
+      String(row[0]).toLowerCase(),
+      String(row[1]).toLowerCase(),
+      String(row[2]).toLowerCase(),
+      String(row[3]).toLowerCase()
+    ];
 
-    if (mode === "index") return index.includes(keyword);
-    if (mode === "iso")   return iso.includes(keyword);
-    if (mode === "tag")   return tag.includes(keyword);
-    if (mode === "type")  return type.includes(keyword);
-  });
+    if (hasKeyword) {
+      const index = lc[0];
+      const iso   = lc[1];
+      const tag   = lc[2];
+      const type  = lc[3];
 
-  filtered.forEach(row => {
+      let ok = false;
+      if (mode === "index") ok = index.includes(keyword);
+      else if (mode === "iso")  ok = iso.includes(keyword);
+      else if (mode === "tag")  ok = tag.includes(keyword);
+      else if (mode === "type") ok = type.includes(keyword);
+
+      if (!ok) continue; // 이 행은 패스
+    }
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row[0]}</td>
@@ -299,17 +324,27 @@ function renderList() {
       <td>${row[2]}</td>
       <td>${row[3]}</td>
     `;
-    tbody.appendChild(tr);
-  });
+    frag.appendChild(tr);
+  }
+
+  tbody.appendChild(frag);
 }
 
-// 입력 즉시 필터
-document.getElementById("searchInput").addEventListener("input", renderList);
+// -------------------------------------------
+// 입력 이벤트: 디바운스 걸어서 렉 방지
+// -------------------------------------------
+let filterTimer = null;
+const searchInputEl = document.getElementById("searchInput");
+
+searchInputEl.addEventListener("input", () => {
+  if (filterTimer) clearTimeout(filterTimer);
+  filterTimer = setTimeout(renderList, 150); // 150ms 후 한 번만 필터
+});
 
 // X 버튼
 document.getElementById("clearBtn").addEventListener("click", () => {
-  searchInput.value = "";
-  searchInput.focus();
+  searchInputEl.value = "";
+  searchInputEl.focus();
   renderList();
 });
 
