@@ -1,0 +1,229 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <title>엑셀 → JSON 변환기</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+  <style>
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      padding: 16px;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+      background: #f3f4f6;
+    }
+    .container {
+      max-width: 900px;
+      margin: 0 auto;
+      background: #ffffff;
+      padding: 16px 18px 24px;
+      border-radius: 12px;
+      box-shadow: 0 4px 10px rgba(0,0,0,0.08);
+    }
+    h1 {
+      margin: 0 0 8px;
+      font-size: 20px;
+    }
+    .desc {
+      font-size: 13px;
+      color: #555;
+      margin-bottom: 16px;
+    }
+    textarea {
+      width: 100%;
+      min-height: 180px;
+      font-family: "Menlo", "Consolas", monospace;
+      font-size: 13px;
+      padding: 10px;
+      border-radius: 8px;
+      border: 1px solid #d1d5db;
+      resize: vertical;
+    }
+    label {
+      font-size: 13px;
+    }
+    .row {
+      margin-top: 10px;
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+    input[type="text"] {
+      flex: 1;
+      padding: 6px 8px;
+      border-radius: 6px;
+      border: 1px solid #d1d5db;
+      font-size: 13px;
+    }
+    button {
+      padding: 8px 14px;
+      font-size: 13px;
+      border-radius: 999px;
+      border: none;
+      cursor: pointer;
+      background: #2563eb;
+      color: #fff;
+      font-weight: 600;
+    }
+    button.secondary {
+      background: #6b7280;
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: default;
+    }
+    .output-box {
+      margin-top: 16px;
+    }
+    .badge {
+      display: inline-block;
+      margin-left: 6px;
+      padding: 2px 8px;
+      font-size: 11px;
+      border-radius: 999px;
+      background: #e5f0ff;
+      color: #1d4ed8;
+    }
+  </style>
+</head>
+<body>
+<div class="container">
+  <h1>엑셀 → JSON 변환기</h1>
+  <div class="desc">
+    1. 엑셀에서 원하는 범위를 선택하고 <b>Ctrl + C</b><br>
+    2. 아래 입력창에 <b>Ctrl + V</b>로 붙여넣기<br>
+    3. <b>JSON 변환</b> 버튼 클릭 → 오른쪽에 JSON이 생성됩니다.
+  </div>
+
+  <!-- 입력 영역 -->
+  <h3 style="margin: 10px 0 4px;">엑셀 붙여넣기 영역</h3>
+  <textarea id="inputArea" placeholder="엑셀에서 복사한 내용을 여기에 붙여넣으세요 (Ctrl+V)"></textarea>
+
+  <div class="row">
+    <label>
+      <input type="checkbox" id="useHeader" checked />
+      첫 줄을 헤더(필드명)로 사용
+    </label>
+  </div>
+
+  <div class="row" id="customKeyRow">
+    <label style="white-space: nowrap;">필드명 직접 지정:</label>
+    <input type="text" id="keys" value="index, iso, rev, date" />
+    <span style="font-size:12px; color:#6b7280;">(쉼표로 구분, 예: index, iso, rev, date)</span>
+  </div>
+
+  <div class="row">
+    <button id="convertBtn">JSON 변환</button>
+    <button id="downloadBtn" class="secondary" disabled>JSON 파일 다운로드</button>
+  </div>
+
+  <!-- 출력 영역 -->
+  <div class="output-box">
+    <h3 style="margin: 16px 0 4px;">
+      JSON 결과
+      <span class="badge" id="countBadge" style="display:none;"></span>
+    </h3>
+    <textarea id="outputArea" placeholder="여기에 JSON 결과가 표시됩니다." readonly></textarea>
+  </div>
+</div>
+
+<script>
+  const inputArea = document.getElementById("inputArea");
+  const outputArea = document.getElementById("outputArea");
+  const convertBtn = document.getElementById("convertBtn");
+  const downloadBtn = document.getElementById("downloadBtn");
+  const useHeaderChk = document.getElementById("useHeader");
+  const keysInput = document.getElementById("keys");
+  const keyRow = document.getElementById("customKeyRow");
+  const countBadge = document.getElementById("countBadge");
+
+  // 헤더 사용 체크에 따라 필드명 입력 박스 숨김/표시
+  useHeaderChk.addEventListener("change", () => {
+    if (useHeaderChk.checked) {
+      keyRow.style.opacity = "0.5";
+    } else {
+      keyRow.style.opacity = "1";
+    }
+  });
+  // 처음에는 헤더 사용이 체크되어 있으므로 keyRow는 회색만
+  keyRow.style.opacity = "0.5";
+
+  function parseExcelToJSON() {
+    const raw = inputArea.value.trim();
+    if (!raw) {
+      alert("엑셀 내용을 먼저 붙여넣어 주세요.");
+      return;
+    }
+
+    // 엑셀에서 복사한 내용은 일반적으로 \t (탭) + \n (개행) 구조
+    const rows = raw.split(/\r?\n/).filter(r => r.trim() !== "");
+    if (rows.length === 0) {
+      alert("유효한 데이터가 없습니다.");
+      return;
+    }
+
+    let keys = [];
+    let startIndex = 0;
+
+    if (useHeaderChk.checked) {
+      // 첫 줄을 헤더로 사용
+      keys = rows[0].split("\t").map(h => h.trim()).filter(h => h !== "");
+      startIndex = 1;
+      if (keys.length === 0) {
+        alert("헤더로 사용할 첫 줄에서 필드명을 찾을 수 없습니다.");
+        return;
+      }
+    } else {
+      // 사용자가 필드명 직접 입력
+      keys = keysInput.value.split(",").map(k => k.trim()).filter(k => k !== "");
+      if (keys.length === 0) {
+        alert("필드명을 쉼표로 구분하여 입력해 주세요. (예: index, iso, rev, date)");
+        return;
+      }
+    }
+
+    const result = [];
+    for (let i = startIndex; i < rows.length; i++) {
+      const line = rows[i];
+      if (!line.trim()) continue;
+
+      const cols = line.split("\t"); // 탭 기준 분리 (엑셀 복사 기본 형식)
+      const obj = {};
+
+      for (let c = 0; c < keys.length; c++) {
+        obj[keys[c]] = (cols[c] !== undefined) ? cols[c].trim() : "";
+      }
+      result.push(obj);
+    }
+
+    const jsonText = JSON.stringify(result, null, 2);
+    outputArea.value = jsonText;
+    downloadBtn.disabled = false;
+    countBadge.style.display = "inline-block";
+    countBadge.textContent = result.length + " rows";
+  }
+
+  function downloadJSON() {
+    const jsonText = outputArea.value.trim();
+    if (!jsonText) {
+      alert("먼저 JSON 변환을 실행해 주세요.");
+      return;
+    }
+    const blob = new Blob([jsonText], { type: "application/json" });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = "data.json"; // 필요하면 이름 바꿔서 저장
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+  }
+
+  convertBtn.addEventListener("click", parseExcelToJSON);
+  downloadBtn.addEventListener("click", downloadJSON);
+</script>
+</body>
+</html>
