@@ -80,10 +80,6 @@ h1 {
 }
 
 /* 검색 입력 */
-.search-box {
-  width: 100%;
-}
-
 .search-input-wrapper {
   position: relative;
   width: 100%;
@@ -137,18 +133,12 @@ tbody tr:hover {
   background: #eef6ff;
 }
 
-/* 행 전체가 클릭 가능한 느낌 */
+/* 행 커서 */
 tbody tr {
   cursor: pointer;
 }
 
-/* 모바일 대응 */
-@media (max-width: 600px) {
-  h1 { font-size: 18px; }
-  #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; }
-}
-
-/* ★ PC 전용 뒤로가기 버튼 ★*/
+/* PC 전용 뒤로가기 */
 .pc-back-btn {
   display: none;
   margin-top: 18px;
@@ -160,8 +150,6 @@ tbody tr {
   font-size: 15px;
   font-weight: 600;
 }
-
-/* PC에서만 보이도록 */
 @media (min-width: 801px) {
   .pc-back-btn {
     display: inline-block;
@@ -180,7 +168,6 @@ tbody tr {
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
-    <!-- 모바일/PC 공용 상단 뒤로가기 버튼 -->
     <a href="https://kdy5642-lgtm.github.io/KDY/"
        style="display:inline-block; margin-top:10px; padding:10px 16px;
               background:#2563eb; color:#fff; text-decoration:none;
@@ -188,7 +175,6 @@ tbody tr {
       ◀ 뒤로가기
     </a>
 
-    <!-- 라디오 선택 -->
     <div class="search-modes">
       <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
       <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
@@ -196,17 +182,13 @@ tbody tr {
       <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
     </div>
 
-    <!-- 검색입력 -->
-    <div class="search-box">
-      <div class="search-input-wrapper">
-        <input id="searchInput" type="text"
-               placeholder="예: 0001, 00701, 2A, 251126 등" />
-        <button id="clearBtn" class="clear-btn">×</button>
-      </div>
+    <div class="search-input-wrapper">
+      <input id="searchInput" type="text" placeholder="예: 0001, 00701, 2A, 251126 등" />
+      <button id="clearBtn" class="clear-btn">×</button>
     </div>
   </div>
 
-  <!-- 결과 테이블 -->
+  <!-- 테이블 -->
   <table>
     <thead>
       <tr>
@@ -219,7 +201,6 @@ tbody tr {
     <tbody id="resultBody"></tbody>
   </table>
 
-  <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ -->
   <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
     ◀ 뒤로가기 (PC)
   </a>
@@ -227,111 +208,73 @@ tbody tr {
 </div>
 
 <script>
-// -------------------------------------------
-// pipingdata.txt → 자동 로드할 배열
-// 각 행 구조: [INDEX, ISO, REV, DATE, LINK?] + _lc(소문자 캐시)
-// -------------------------------------------
-let rawData = [];
-
-// -------------------------------------------
-// 텍스트 파싱 (+ 소문자 캐시)
-// pipingdata.txt 형식 예:
-// 0001  S211-10_SB_ISO-3TK-CFL-2152-01-007-01  3-A  2025-10-22  https://~~.pdf
-// -------------------------------------------
+// ------------------------------------------
+// TXT 파싱: 앞 4개만 split, 나머지는 전체를 링크로 취급
+// PC/모바일 모두 확실히 URL을 5번째 컬럼으로 인식
+// ------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-    if (!trimmed) continue;
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
 
-    // 탭/공백/콤마 기준 분리
-    let cols = trimmed.split(/[\t, ]+/g);
-    if (cols.length < 4) continue;
+    const parts = line.split(/[\t ]+/g);
+    const first4 = parts.slice(0, 4);
+    const link = line.substring(first4.join(" ").length).trim();
 
-    const c0 = cols[0];           // INDEX
-    const c1 = cols[1];           // ISO
-    const c2 = cols[2];           // REV
-    const c3 = cols[3];           // DATE
-    let   c4 = "";                // LINK(옵션)
-
-    if (cols.length >= 5) {
-      // 나머지는 전부 링크(보통 공백 없는 URL이라 문제 없음)
-      c4 = cols.slice(4).join(" ");
-    }
+    const [c0, c1, c2, c3] = first4;
+    const c4 = link;
 
     const row = [c0, c1, c2, c3, c4];
-
-    // 검색용 소문자 캐시 (링크는 검색 안 함)
     row._lc = [
-      String(c0).toLowerCase(),
-      String(c1).toLowerCase(),
-      String(c2).toLowerCase(),
-      String(c3).toLowerCase()
+      c0.toLowerCase(),
+      c1.toLowerCase(),
+      c2.toLowerCase(),
+      c3.toLowerCase()
     ];
 
     parsed.push(row);
   }
-
   return parsed;
 }
 
-// -------------------------------------------
-// pipingdata.txt 로드
-// -------------------------------------------
+// ------------------------------------------
+// pipingdata.txt 로딩
+// ------------------------------------------
+let rawData = [];
 async function loadData() {
-  try {
-    const res = await fetch("pipingdata.txt?_=" + Date.now());
-    const text = await res.text();
-    rawData = parseTextToData(text);
-    renderList();
-  } catch (e) {
-    console.error(e);
-    alert("pipingdata.txt 파일을 불러오지 못했습니다.");
-  }
+  const res = await fetch("pipingdata.txt?_=" + Date.now());
+  const text = await res.text();
+  rawData = parseTextToData(text);
+  renderList();
 }
 
-// -------------------------------------------
-// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시)
-// -------------------------------------------
+// ------------------------------------------
+// 렌더링 + 필터
+// ------------------------------------------
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
-  const normKw = rawKw.replace(/[-_\s]/g, "");  // -, _, 공백 제거
+  const kwRaw = document.getElementById("searchInput").value.trim().toLowerCase();
+  const kwNorm = kwRaw.replace(/[-_\s]/g, "");
   const tbody = document.getElementById("resultBody");
-
-  const hasKeyword = rawKw.length > 0;
+  const hasKw = kwRaw.length > 0;
 
   tbody.innerHTML = "";
   const frag = document.createDocumentFragment();
 
-  for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i];
+  rawData.forEach(row => {
     const lc = row._lc;
-
-    if (hasKeyword) {
-      const index = lc[0];
-      const iso   = lc[1];
-      const rev   = lc[2];
-      const date  = lc[3];
-
-      const indexNorm = index.replace(/[-_\s]/g, "");
-      const isoNorm   = iso.replace(/[-_\s]/g, "");
-      const revNorm   = rev.replace(/[-_\s]/g, "");
-      const dateNorm  = date.replace(/[-_\s]/g, "");
-
-      let ok = false;
-      if (mode === "index")
-        ok = index.includes(rawKw) || indexNorm.includes(normKw);
-      else if (mode === "iso")
-        ok = iso.includes(rawKw) || isoNorm.includes(normKw);
-      else if (mode === "Rev")
-        ok = rev.includes(rawKw) || revNorm.includes(normKw);
-      else if (mode === "Date")
-        ok = date.includes(rawKw) || dateNorm.includes(normKw);
-
-      if (!ok) continue;
+    if (hasKw) {
+      const [index, iso, rev, date] = lc;
+      const check = {
+        index: index.includes(kwRaw) || index.replace(/[-_\s]/g, "").includes(kwNorm),
+        iso:   iso.includes(kwRaw)   || iso.replace(/[-_\s]/g, "").includes(kwNorm),
+        Rev:   rev.includes(kwRaw)   || rev.replace(/[-_\s]/g, "").includes(kwNorm),
+        Date:  date.includes(kwRaw)  || date.replace(/[-_\s]/g, "").includes(kwNorm)
+      };
+      if (!check[mode]) return;
     }
 
     const tr = document.createElement("tr");
@@ -342,52 +285,60 @@ function renderList() {
       <td>${row[3]}</td>
     `;
 
-    // ★ 행 클릭 시 도면 열기 확인
+    // ------------------------------------------
+    // ★ PC/모바일 모두 "무조건 새창" 강제 열기 기능 ★
+    // ------------------------------------------
     tr.addEventListener("click", () => {
-      const link = row[4]; // 5번째 컬럼: 링크
-
+      const link = row[4];
       if (!link) {
         alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
         return;
       }
 
       const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`;
-      if (confirm(msg)) {
-        // 새 탭/창으로 열기 (모바일에서도 동작)
-        window.open(link, "_blank");
+      if (!confirm(msg)) return;
+
+      // 1) 기본 팝업 시도
+      let win = window.open(link, "_blank", "noopener");
+
+      // 2) PC 팝업 차단 대비: 강제 a 태그 클릭 방식
+      if (!win || win.closed || typeof win.closed === "undefined") {
+        const a = document.createElement("a");
+        a.href = link;
+        a.target = "_blank";
+        a.rel = "noopener";
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
       }
     });
 
     frag.appendChild(tr);
-  }
+  });
 
   tbody.appendChild(frag);
 }
 
-// 2초 디바운스
-let filterTimer = null;
-const searchInputEl = document.getElementById("searchInput");
-
-searchInputEl.addEventListener("input", () => {
-  if (filterTimer) clearTimeout(filterTimer);
-  filterTimer = setTimeout(renderList, 2000);
+// ------------------------------------------
+// 이벤트 바인딩
+// ------------------------------------------
+let timer = null;
+document.getElementById("searchInput").addEventListener("input", () => {
+  if (timer) clearTimeout(timer);
+  timer = setTimeout(renderList, 2000);
 });
 
-// X 버튼
 document.getElementById("clearBtn").addEventListener("click", () => {
-  searchInputEl.value = "";
-  searchInputEl.focus();
+  document.getElementById("searchInput").value = "";
   renderList();
 });
 
-// 라디오 변경 시 필터
-document.querySelectorAll('input[name="mode"]').forEach(r => {
-  r.addEventListener("change", renderList);
-});
+document.querySelectorAll('input[name="mode"]').forEach(r =>
+  r.addEventListener("change", renderList)
+);
 
-// 페이지 로드시 데이터 로딩
+// 초기 로드
 loadData();
 </script>
-
 </body>
 </html>
