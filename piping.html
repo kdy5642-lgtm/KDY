@@ -209,7 +209,7 @@ tbody tr {
 
 <script>
 // ------------------------------------------
-// TXT 파싱
+// TXT 파싱 (앞 4개 split + 나머지 전체 링크 처리)
 // ------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
@@ -282,7 +282,7 @@ function renderList() {
     `;
 
     // ------------------------------------------
-    // ★ 모바일/PC 탭 두 번 문제 해결 버전
+    // ★ PC → 새창 / 모바일 → 현재 탭 열기
     // ------------------------------------------
     tr.addEventListener("click", () => {
       const link = row[4];
@@ -296,25 +296,14 @@ function renderList() {
 
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // 1) 모바일 → window.open만 실행 (중복 방지)
+      // 모바일 = 현재 탭
       if (isMobile) {
-        window.open(link, "_blank", "noopener");
+        window.location.href = link;
         return;
       }
 
-      // 2) PC → window.open 시도
-      let win = window.open(link, "_blank", "noopener");
-
-      // 3) PC에서 실패 시 → a 태그 클릭 방식으로 새창 강제
-      if (!win || win.closed || typeof win.closed === "undefined") {
-        const a = document.createElement("a");
-        a.href = link;
-        a.target = "_blank";
-        a.rel = "noopener";
-        document.body.appendChild(a);
-        a.click();
-        a.remove();
-      }
+      // PC = 새탭
+      window.open(link, "_blank", "noopener");
     });
 
     frag.appendChild(tr);
