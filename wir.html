@@ -26,18 +26,20 @@
         padding: 16px 4px 8px;
     }
 
-    /* 검색 + 뒤로가기 바 */
+    /* 검색 + 헤더 고정 영역 (엑셀 틀고정) */
     .search-bar-wrap {
         position: sticky;
         top: 0;
         background: #f5f6fa;
-        padding: 8px 0 10px;
+        padding: 8px 0 4px;
         z-index: 999;
     }
+
     .search-row {
         display: flex;
         align-items: center;
         gap: 10px;
+        margin-bottom: 6px;
     }
 
     /* 검색창 */
@@ -59,21 +61,12 @@
         color: white;
         border-radius: 8px;
         cursor: pointer;
+        white-space: nowrap;
     }
 
     /* 테이블 전체 영역 */
     .table-wrapper {
-        margin-top: 6px;
-    }
-
-    /* 엑셀 틀고정: 헤더 고정 */
-    .table-header {
-        position: sticky;
-        top: 62px;
-        z-index: 900;
-        background: white;
-        border-bottom: 2px solid #ddd;
-        font-weight: bold;
+        margin-top: 4px;
     }
 
     /* NOTE 컬럼 포함한 전체 grid 구조 */
@@ -93,8 +86,19 @@
         font-size: 15px;
     }
 
-    /* 홀짝 줄 구분 */
-    .table-row:nth-child(even) {
+    /* 헤더 줄 (검색바 아래에 항상 고정) */
+    .table-header {
+        border-top: 1px solid #ddd;
+        border-bottom: 2px solid #ddd;
+        background: #f3f6ff;
+        font-weight: 700;
+    }
+    .table-header div {
+        text-align: center;  /* 헤더 전체 가운데 정렬 */
+    }
+
+    /* 데이터 줄 홀짝 구분 */
+    #tableBody .table-row:nth-child(even) {
         background: #fafafa;
     }
 
@@ -103,14 +107,23 @@
         text-align: center;
     }
 
+    /* 숫자/코드 칼럼은 기본적으로 가운데 정렬 */
+    #tableBody .table-row > div:nth-child(1),
+    #tableBody .table-row > div:nth-child(3),
+    #tableBody .table-row > div:nth-child(4),
+    #tableBody .table-row > div:nth-child(5) {
+        text-align: center;
+    }
+
     /* NOTE 칸 */
     .note-cell {
         color: #999;
         padding-left: 8px;
+        text-align: left;
     }
 
     /* 행 하이라이트 */
-    .table-row:hover {
+    #tableBody .table-row:hover {
         background: #eaf1ff;
         transition: 0.15s;
     }
@@ -139,18 +152,15 @@
 
     <div class="top-title">대공 PKG3 WIR 현황</div>
 
-    <!-- 검색바 고정 -->
+    <!-- 🔒 검색 + 헤더: 항상 상단 고정 (엑셀 틀고정 느낌) -->
     <div class="search-bar-wrap">
         <div class="search-row">
-            <input id="searchInput" class="search-input" placeholder="예: 0001, 00701, DK-GW-048, 20250113 등" />
+            <input id="searchInput" class="search-input"
+                   placeholder="예: 0001, 00701, DK-GW-048, 20250113 등" />
             <button class="back-btn" onclick="history.back()">뒤로가기</button>
         </div>
-    </div>
 
-    <!-- 테이블 -->
-    <div class="table-wrapper">
-
-        <!-- 헤더 고정 -->
+        <!-- 헤더 줄 -->
         <div class="table-header table-row">
             <div>INDEX</div>
             <div>ISO 도면번호</div>
@@ -159,37 +169,52 @@
             <div>Date</div>
             <div>Note</div>
         </div>
+    </div>
 
-        <!-- 데이터 들어가는 곳 -->
+    <!-- 데이터 영역 -->
+    <div class="table-wrapper">
         <div id="tableBody"></div>
-
     </div>
 </div>
 
 <script>
 let wirData = [];
 
-async function loadData() {
-    showLoading(true);
-    const response = await fetch("wirdata.txt");
-    const text = await response.text();
-
-    const lines = text.trim().split("\n");
-    wirData = lines.map(line => {
-        const parts = line.split("\t");
-        return {
-            index: parts[0] || "",
-            iso: parts[1] || "",
-            joint: parts[2] || "",
-            wd: parts[3] || "",
-            date: parts[4] || ""
-        };
-    });
-
-    showLoading(false);
-    renderTable(wirData);
+// 로딩 오버레이 ON/OFF
+function showLoading(show) {
+    document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
 }
 
+// TXT 로드
+async function loadData() {
+    try {
+        showLoading(true);
+        const response = await fetch("wirdata.txt?_=" + Date.now());
+        const text = await response.text();
+
+        const lines = text.trim().split("\n");
+        wirData = lines.map(line => {
+            // 탭 기준으로 파싱 (필요하면 공백/쉼표도 추가 가능)
+            const parts = line.split(/\t+/);
+            return {
+                index: parts[0] || "",
+                iso:   parts[1] || "",
+                joint: parts[2] || "",
+                wd:    parts[3] || "",
+                date:  parts[4] || ""
+            };
+        });
+
+        renderTable(wirData);
+    } catch (e) {
+        console.error(e);
+        alert("wirdata.txt 파일을 불러오지 못했습니다.");
+    } finally {
+        showLoading(false);
+    }
+}
+
+// 테이블 렌더링
 function renderTable(list) {
     const body = document.getElementById("tableBody");
     body.innerHTML = "";
@@ -209,35 +234,36 @@ function renderTable(list) {
     });
 }
 
-function showLoading(show) {
-    document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
-}
-
-/* 통합검색 */
+// 통합 검색
 document.getElementById("searchInput").addEventListener("input", function () {
     const q = this.value.trim().toLowerCase();
 
-    if (q === "") {
+    if (!q) {
         renderTable(wirData);
         return;
     }
 
     showLoading(true);
 
+    // 살짝 딜레이를 줘서 입력 중 로딩 표시 자연스럽게
     setTimeout(() => {
-        const filtered = wirData.filter(r =>
-            r.index.toLowerCase().includes(q) ||
-            r.iso.toLowerCase().includes(q) ||
-            r.joint.toLowerCase().includes(q) ||
-            r.wd.toLowerCase().includes(q) ||
-            r.date.toLowerCase().includes(q)
-        );
+        const filtered = wirData.filter(r => {
+            const line = (
+                (r.index || "") + " " +
+                (r.iso   || "") + " " +
+                (r.joint || "") + " " +
+                (r.wd    || "") + " " +
+                (r.date  || "")
+            ).toLowerCase();
+            return line.includes(q);
+        });
 
         renderTable(filtered);
         showLoading(false);
-    }, 200);
+    }, 150);
 });
 
+// 초기 로드
 loadData();
 </script>
 
