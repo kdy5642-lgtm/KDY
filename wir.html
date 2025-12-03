@@ -26,13 +26,13 @@
         padding: 16px 4px 8px;
     }
 
-    /* 검색 + 헤더 고정 영역 (엑셀 틀고정) */
+    /* 검색바 고정 영역 */
     .search-bar-wrap {
         position: sticky;
         top: 0;
         background: #f5f6fa;
         padding: 8px 0 4px;
-        z-index: 999;
+        z-index: 1000;
     }
 
     .search-row {
@@ -64,40 +64,46 @@
         white-space: nowrap;
     }
 
-    /* 테이블 전체 영역 */
+    /* 테이블 전체 영역 (헤더 + 바디 같이 스크롤) */
     .table-wrapper {
         margin-top: 4px;
         overflow-x: auto;      /* 모바일에서 가로 스크롤 */
         background: #ffffff;   /* 우측으로 밀어도 흰 배경 유지 */
+        position: relative;    /* sticky 헤더 z-index 기준 */
     }
 
     /* NOTE 컬럼 포함한 전체 grid 구조 */
     .table-row {
         display: grid;
         grid-template-columns:
-            80px       /* INDEX */
-            360px      /* ISO */
-            70px       /* Joint */
-            120px      /* W/D No */
-            120px      /* Date */
-            1fr;       /* NOTE (남는 여백 전부 먹음) */
+            80px   /* INDEX */
+            360px  /* ISO */
+            70px   /* Joint */
+            120px  /* W/D No */
+            120px  /* Date */
+            1fr;   /* Note */
         padding: 4px 8px;
         border-bottom: 1px solid #eee;
         background: white;
         align-items: center;
         font-size: 15px;
-        min-width: 880px;      /* 화면보다 넓어지면 가로 스크롤 생김 */
+        min-width: 880px; /* 화면보다 넓어지면 가로 스크롤 생김 */
     }
 
-    /* 헤더 줄 (검색바 아래에 항상 고정) */
+    /* 헤더 줄 (테이블 안에 두고 sticky) */
     .table-header {
         border-top: 1px solid #ddd;
         border-bottom: 2px solid #ddd;
         background: #f3f6ff;
         font-weight: 700;
+
+        position: sticky;
+        top: 0;          /* 화면 상단에 고정 */
+        z-index: 10;     /* 데이터 줄보다 위로 */
     }
+
     .table-header div {
-        text-align: center;  /* 헤더 전체 가운데 정렬 */
+        text-align: center; /* 헤더 전체 가운데 정렬 */
     }
 
     /* 데이터 줄 홀짝 구분 */
@@ -105,10 +111,9 @@
         background: #fafafa;
     }
 
-    /* ISO 기본: PC에서는 가운데 정렬 */
+    /* ISO 가운데 정렬 */
     .iso-cell {
         text-align: center;
-        line-height: 1.3;
     }
 
     /* 숫자/코드 칼럼은 기본적으로 가운데 정렬 */
@@ -139,66 +144,62 @@
         font-weight: 600;
     }
 
-    /* 로딩 오버레이 + 원형 스피너 */
+    /* 로딩 오버레이 */
     #loading-overlay {
         position: fixed;
         inset: 0;
         background: rgba(255,255,255,0.75);
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
+        flex-direction: column;
         z-index: 3000;
+        font-size: 16px;
+        font-weight: 500;
+        display: none;
     }
-    #loading-overlay .spinner {
-        width: 42px;
-        height: 42px;
+
+    /* 동그란 로딩 인디케이터 */
+    .spinner {
+        width: 40px;
+        height: 40px;
         border-radius: 50%;
-        border: 4px solid #d0d4e4;
+        border: 4px solid rgba(0,0,0,0.1);
         border-top-color: #2563eb;
         animation: spin 0.8s linear infinite;
+        margin-bottom: 8px;
     }
+
     @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* ------------------- 모바일 전용 설정 ------------------- */
-    @media (max-width: 768px) {
-
-        /* 일부 브라우저에서 sticky를 더 잘 먹게 */
-        .search-bar-wrap {
-            position: -webkit-sticky;
-            position: sticky;
-            top: 0;
-        }
-
-        /* ISO 셀: 모바일에서는 2줄, 왼쪽 정렬 */
-        .iso-cell {
-            text-align: left;
-            white-space: normal;
-            overflow: hidden;
-            word-break: break-all;
+        to {
+            transform: rotate(360deg);
         }
     }
 </style>
 </head>
 <body>
-
 <div id="loading-overlay">
-  <div class="spinner"></div>
+    <div class="spinner"></div>
+    <div>로딩 중...</div>
 </div>
 
 <div class="container">
-
     <div class="top-title">대공 PKG3 WIR 현황</div>
 
-    <!-- 🔒 검색 + 헤더: 항상 상단 고정 (엑셀 틀고정 느낌) -->
+    <!-- 🔒 검색바: 항상 상단 고정 -->
     <div class="search-bar-wrap">
         <div class="search-row">
-            <input id="searchInput" class="search-input"
-                   placeholder="예: 0001, 00701, DK-GW-048, 20250113 등" />
+            <input
+                id="searchInput"
+                class="search-input"
+                placeholder="예: 0001, 00701, DK-GW-048, 20250113 등"
+            />
             <button class="back-btn" onclick="history.back()">뒤로가기</button>
         </div>
+    </div>
 
+    <!-- 헤더 + 데이터 영역 (같이 가로 스크롤) -->
+    <div class="table-wrapper">
         <!-- 헤더 줄 -->
         <div class="table-header table-row">
             <div>INDEX</div>
@@ -208,160 +209,108 @@
             <div>Date</div>
             <div>Note</div>
         </div>
-    </div>
 
-    <!-- 데이터 영역 -->
-    <div class="table-wrapper">
+        <!-- 데이터 영역 -->
         <div id="tableBody"></div>
     </div>
 </div>
 
 <script>
-let wirData = [];
+    let wirData = [];
 
-// 로딩 오버레이 ON/OFF
-function showLoading(show) {
-    const overlay = document.getElementById("loading-overlay");
-    overlay.style.display = show ? "flex" : "none";
-}
-
-// TXT 로드
-async function loadData() {
-    try {
-        showLoading(true);
-        const response = await fetch("wirdata.txt?_=" + Date.now());
-        const text = await response.text();
-
-        const lines = text.trim().split("\n");
-        wirData = lines.map(line => {
-            // 탭 기준으로 파싱 (필요하면 공백/쉼표도 추가 가능)
-            const parts = line.split(/\t+/);
-            return {
-                index: parts[0] || "",
-                iso:   parts[1] || "",
-                joint: parts[2] || "",
-                wd:    parts[3] || "",
-                date:  parts[4] || ""
-            };
-        });
-
-        renderTable(wirData);
-    } catch (e) {
-        console.error(e);
-        alert("wirdata.txt 파일을 불러오지 못했습니다.");
-    } finally {
-        showLoading(false);
+    // 로딩 오버레이 ON/OFF
+    function showLoading(show) {
+        document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
     }
-}
 
-// ISO 셀 폰트 자동 줄이기 (모바일 전용)
-function adjustIsoForMobile() {
-    if (window.innerWidth > 768) return;  // PC는 건드리지 않음
+    // TXT 로드
+    async function loadData() {
+        try {
+            showLoading(true);
+            const response = await fetch("wirdata.txt?_=" + Date.now());
+            const text = await response.text();
+            const lines = text.trim().split("\n");
 
-    const baselineLength = "S211-10_SB_ISO-3TK-P-2153-01-030-01".length; // 36
-    const isoCells = document.querySelectorAll(".iso-cell");
+            wirData = lines.map(line => {
+                // 탭 기준으로 파싱
+                const parts = line.split(/\t+/);
+                return {
+                    index: parts[0] || "",
+                    iso:   parts[1] || "",
+                    joint: parts[2] || "",
+                    wd:    parts[3] || "",
+                    date:  parts[4] || ""
+                };
+            });
 
-    isoCells.forEach(cell => {
-        // 기본 폰트와 줄간 설정
-        let size = 15;
-        cell.style.fontSize = size + "px";
-        cell.style.lineHeight = "1.3";
-        cell.style.whiteSpace = "normal";
-        cell.style.overflow = "hidden";
+            renderTable(wirData);
+        } catch (e) {
+            console.error(e);
+            alert("wirdata.txt 파일을 불러오지 못했습니다.");
+        } finally {
+            showLoading(false);
+        }
+    }
 
-        const text = (cell.textContent || "").trim();
-        if (!text) return;
+    // 테이블 렌더링
+    function renderTable(list) {
+        const body = document.getElementById("tableBody");
+        body.innerHTML = "";
 
-        // 두 줄 높이 기준 계산
-        const lineHeight = parseFloat(getComputedStyle(cell).lineHeight || "19");
-        const maxHeight = lineHeight * 2;
+        list.forEach(row => {
+            const div = document.createElement("div");
+            div.className = "table-row";
+            div.innerHTML = `
+                <div>${row.index}</div>
+                <div class="iso-cell">${row.iso}</div>
+                <div>${row.joint}</div>
+                <div>${row.wd}</div>
+                <div>${row.date}</div>
+                <div class="note-cell"></div>
+            `;
 
-        // 기준 길이 이하이면 그대로 사용
-        if (text.length <= baselineLength) {
-            // 그래도 혹시 2줄 넘어가면 조금만 줄여 보기
-            if (cell.scrollHeight > maxHeight) {
-                while (cell.scrollHeight > maxHeight && size > 11) {
-                    size--;
-                    cell.style.fontSize = size + "px";
-                }
-            }
+            // 클릭 시 노란 하이라이트
+            div.addEventListener("click", () => {
+                document
+                    .querySelectorAll("#tableBody .table-row")
+                    .forEach(r => r.classList.remove("selected"));
+                div.classList.add("selected");
+            });
+
+            body.appendChild(div);
+        });
+    }
+
+    // 통합 검색
+    document.getElementById("searchInput").addEventListener("input", function () {
+        const q = this.value.trim().toLowerCase();
+        if (!q) {
+            renderTable(wirData);
             return;
         }
 
-        // 기준보다 길면 두 줄에 들어갈 때까지 폰트 줄임
-        while (cell.scrollHeight > maxHeight && size > 10) {
-            size--;
-            cell.style.fontSize = size + "px";
-        }
-    });
-}
+        showLoading(true);
 
-// 테이블 렌더링
-function renderTable(list) {
-    const body = document.getElementById("tableBody");
-    body.innerHTML = "";
+        // 입력 중에도 너무 깜빡이지 않게 살짝 딜레이
+        setTimeout(() => {
+            const filtered = wirData.filter(r => {
+                const line = (
+                    (r.index || "") + " " +
+                    (r.iso   || "") + " " +
+                    (r.joint || "") + " " +
+                    (r.wd    || "") + " " +
+                    (r.date  || "")
+                ).toLowerCase();
+                return line.includes(q);
+            });
 
-    list.forEach(row => {
-        const div = document.createElement("div");
-        div.className = "table-row";
-        div.innerHTML = `
-            <div>${row.index}</div>
-            <div class="iso-cell">${row.iso}</div>
-            <div>${row.joint}</div>
-            <div>${row.wd}</div>
-            <div>${row.date}</div>
-            <div class="note-cell"></div>
-        `;
-
-        // 클릭 시 노란 하이라이트
-        div.addEventListener("click", () => {
-            document.querySelectorAll("#tableBody .table-row")
-                .forEach(r => r.classList.remove("selected"));
-            div.classList.add("selected");
-        });
-
-        body.appendChild(div);
+            renderTable(filtered);
+            showLoading(false);
+        }, 150);
     });
 
-    // ISO 폰트 조정 (모바일 전용)
-    adjustIsoForMobile();
-}
-
-// 통합 검색
-document.getElementById("searchInput").addEventListener("input", function () {
-    const q = this.value.trim().toLowerCase();
-
-    if (!q) {
-        renderTable(wirData);
-        return;
-    }
-
-    showLoading(true);
-
-    // 살짝 딜레이를 줘서 입력 중 로딩 표시 자연스럽게
-    setTimeout(() => {
-        const filtered = wirData.filter(r => {
-            const line = (
-                (r.index || "") + " " +
-                (r.iso   || "") + " " +
-                (r.joint || "") + " " +
-                (r.wd    || "") + " " +
-                (r.date  || "")
-            ).toLowerCase();
-            return line.includes(q);
-        });
-
-        renderTable(filtered);
-        showLoading(false);
-    }, 150);
-});
-
-// 화면 크기 변경 시에도 모바일에서 ISO 폰트 재조정
-window.addEventListener("resize", adjustIsoForMobile);
-
-// 초기 로드
-loadData();
+    // 초기 로드
+    loadData();
 </script>
-
 </body>
 </html>
