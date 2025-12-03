@@ -8,11 +8,6 @@
 <style>
 * { box-sizing: border-box; }
 
-:root {
-  /* 헤더 고정 위치 (JS에서 top-bar 높이로 덮어씀) */
-  --header-offset: 120px;
-}
-
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   background: #f0f2f5;
@@ -137,24 +132,22 @@ table {
   font-size: 14px;
 }
 
-/* 헤더 줄 */
+/* 헤더: 상단 고정 */
 thead {
-  background: #f7f7f9;
-}
-
-/* ★ 여기서 각 헤더 셀을 고정 */
-thead th {
+  background-color: #f7f7f9;
   position: sticky;
-  top: var(--header-offset);     /* top-bar 높이만큼 아래에서 고정 */
+  top: 108px;                    /* 검색창 아래에 딱 붙게 (필요하면 숫자만 조정) */
   z-index: 998;
-  background: #f7f7f9;
+}
+thead th {
+  background-color: #f7f7f9;     /* 밑 행 안 비치게 불투명 배경 */
 }
 
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
-  white-space: nowrap;           /* 셀 안에서 줄바꿈 금지 */
+  white-space: nowrap;           /* 셀 줄바꿈 금지 */
 }
 tbody tr:nth-child(odd) {
   background: #fcfcff;
@@ -389,16 +382,6 @@ function renderList() {
   tbody.appendChild(frag);
 }
 
-// -------------------------------------------
-// top-bar 높이에 맞춰 헤더 고정 위치 계산
-// -------------------------------------------
-function updateHeaderOffset() {
-  const topBar = document.querySelector(".top-bar");
-  if (!topBar) return;
-  const h = topBar.offsetHeight; // 실제 높이
-  document.documentElement.style.setProperty("--header-offset", h + "px");
-}
-
 // 2초 디바운스
 let filterTimer = null;
 const searchInputEl = document.getElementById("searchInput");
@@ -420,11 +403,7 @@ document.querySelectorAll('input[name="mode"]').forEach(r => {
   r.addEventListener("change", renderList);
 });
 
-// 창 크기 바뀔 때도 헤더 위치 재계산
-window.addEventListener("resize", updateHeaderOffset);
-
-// 페이지 로드시 데이터 로딩 + 헤더 위치 세팅
-updateHeaderOffset();
+// 페이지 로드시 데이터 로딩
 loadData();
 </script>
 
