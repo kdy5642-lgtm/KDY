@@ -67,12 +67,12 @@
     /* 테이블 전체 영역 */
     .table-wrapper {
         margin-top: 4px;
-        overflow-x: auto;
+        overflow-x: auto;      /* PC에서 가로 스크롤 */
         background: #ffffff;
         position: relative;
     }
 
-    /* NOTE 컬럼 포함한 전체 grid 구조 */
+    /* 기본 grid 구조 (PC 기준) */
     .table-row {
         display: grid;
         grid-template-columns:
@@ -87,16 +87,15 @@
         background: white;
         align-items: center;
         font-size: 15px;
-        min-width: 880px;
+        min-width: 880px; /* PC에서는 넓게, 가로 스크롤 허용 */
     }
 
-    /* 헤더 */
+    /* 헤더 줄 */
     .table-header {
         border-top: 1px solid #ddd;
         border-bottom: 2px solid #ddd;
         background: #f3f6ff;
         font-weight: 700;
-
         position: sticky;
         top: 0;
         z-index: 10;
@@ -106,17 +105,22 @@
         text-align: center;
     }
 
-    /* 홀짝 구분 */
+    /* 홀짝 배경 */
     #tableBody .table-row:nth-child(even) {
         background: #fafafa;
     }
 
-    /* 숫자/코드 칼럼 기본 정렬 */
+    /* 숫자/코드 칼럼 기본 가운데 정렬 */
     #tableBody .table-row > div:nth-child(1),
     #tableBody .table-row > div:nth-child(3),
     #tableBody .table-row > div:nth-child(4),
     #tableBody .table-row > div:nth-child(5) {
         text-align: center;
+    }
+
+    .iso-cell {
+        text-align: center;
+        white-space: nowrap;
     }
 
     .note-cell {
@@ -125,7 +129,7 @@
         text-align: left;
     }
 
-    /* 줄바꿈 포함된 셀 자동 왼쪽정렬 */
+    /* 줄바꿈(개행) 포함된 셀은 왼쪽 정렬 + 줄바꿈 표시 */
     .has-newline {
         text-align: left !important;
         white-space: pre-line !important;
@@ -173,14 +177,48 @@
         to { transform: rotate(360deg); }
     }
 
-    /* 모바일 전용: ISO를 항상 3줄 고정 + 왼쪽정렬 */
+    /* =========================
+       📱 모바일 전용 레이아웃
+       - 화면 폭에 맞게 가변 비율
+       - INDEX ~ DATE까지 한 화면에
+       - NOTE 컬럼은 폭 0으로 숨김
+       ========================= */
     @media (max-width: 768px) {
+        .table-wrapper {
+            overflow-x: hidden;      /* 기본적으로 가로 스크롤 숨김 */
+        }
+
+        .table-row {
+            min-width: 100%;         /* 화면폭에 맞게 */
+            grid-template-columns:
+                0.7fr   /* INDEX  */
+                2.4fr   /* ISO    */
+                0.9fr   /* JOINT  */
+                1.1fr   /* W/D No */
+                1.1fr   /* DATE   */
+                0fr;    /* NOTE -> 폭 0 */
+        }
+
+        /* ISO는 모바일에서 자동 줄바꿈 + 왼쪽정렬 */
         .iso-cell {
-            white-space: pre-line !important;
-            line-height: 1.2;
-            height: calc(1.2em * 3);
+            white-space: normal;
+            text-align: left;
+        }
+
+        /* NOTE 셀 내용은 안 보이게 (폭도 0이지만 혹시 몰라서) */
+        .table-row > div:nth-child(6) {
             overflow: hidden;
-            text-align: left !important;
+        }
+
+        /* 헤더도 같은 비율로 맞추기 */
+        .table-header {
+            grid-template-columns:
+                0.7fr
+                2.4fr
+                0.9fr
+                1.1fr
+                1.1fr
+                0fr;
         }
     }
 </style>
@@ -195,14 +233,19 @@
 <div class="container">
     <div class="top-title">대공 PKG3 WIR 현황</div>
 
+    <!-- 검색바 (상단 고정) -->
     <div class="search-bar-wrap">
         <div class="search-row">
-            <input id="searchInput" class="search-input"
-                placeholder="예: 0001, 00701, DK-GW-048, 20250113 등">
+            <input
+                id="searchInput"
+                class="search-input"
+                placeholder="예: 0001, 00701, DK-GW-048, 20250113 등"
+            />
             <button class="back-btn" onclick="history.back()">뒤로가기</button>
         </div>
     </div>
 
+    <!-- 헤더 + 데이터 영역 -->
     <div class="table-wrapper">
         <div class="table-header table-row">
             <div>INDEX</div>
@@ -234,13 +277,13 @@
 
             const response = await fetch("wirdata.txt?_=" + Date.now());
             const text = await response.text();
-
             const lines = text.trim().split("\n");
 
             wirData = lines.map(line => {
                 const parts = line.split(/\t+/);
                 return {
                     index: parts[0] || "",
+                    // ISO에 \n 문자열이 들어있으면 실제 줄바꿈으로 변경
                     iso:   (parts[1] || "").replace(/\\n/g, "\n"),
                     joint: parts[2] || "",
                     wd:    parts[3] || "",
@@ -249,7 +292,6 @@
             });
 
             renderTable(wirData);
-
         } catch (e) {
             console.error(e);
             alert("wirdata.txt 파일을 불러오지 못했습니다.");
@@ -275,6 +317,7 @@
                 <div class="note-cell"></div>
             `;
 
+            // 클릭 시 선택 행 하이라이트
             div.addEventListener("click", () => {
                 document.querySelectorAll("#tableBody .table-row")
                     .forEach(r => r.classList.remove("selected"));
@@ -285,6 +328,7 @@
         });
     }
 
+    // 통합 검색
     document.getElementById("searchInput").addEventListener("input", function () {
         const q = this.value.trim().toLowerCase();
 
@@ -312,6 +356,7 @@
         }, 150);
     });
 
+    // 초기 데이터 로드
     loadData();
 </script>
 </body>
