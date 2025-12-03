@@ -8,12 +8,17 @@
 <style>
 * { box-sizing: border-box; }
 
+:root {
+  /* 검색창 높이만큼 헤더를 아래로 내리기 위한 오프셋 */
+  --header-offset: 56px;
+}
+
 body {
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
   background: #f0f2f5;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* 페이지 전체 가로 스크롤 막기 */
+  overflow-x: hidden; /* 페이지 전체 가로 스크롤 방지 */
 }
 
 .container {
@@ -24,23 +29,22 @@ body {
   padding: 12px 14px 40px;
 }
 
-/* 상단 영역(이제 sticky 아님, 그냥 일반) */
+/* 상단(제목/뒤로가기) */
 .top-bar {
   background: #ffffff;
-  padding: 8px 8px 10px;
+  padding: 8px 8px 6px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
-/* 제목 */
 .title-row {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 10px;
   flex-wrap: wrap;
-  gap: 8px;
 }
 h1 {
-  margin: 0 0 6px 0;
+  margin: 0;
   font-size: 20px;
   font-weight: 700;
 }
@@ -54,27 +58,14 @@ h1 {
   white-space: nowrap;
 }
 
-/* 라디오 버튼 (모양만 유지, 검색엔 영향 없음) */
-.search-modes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px 10px;
-  margin: 4px 0 6px;
-}
-
-.search-modes label {
-  font-size: 13px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 3px 9px;
-  border-radius: 999px;
-  background: #f6f7fb;
-  cursor: pointer;
-}
-
-.search-modes input[type="radio"] {
-  accent-color: #2563eb;
+/* 검색창만 sticky */
+.search-sticky {
+  position: sticky;
+  top: 0;
+  z-index: 900;
+  background: #ffffff;
+  padding: 6px 8px 8px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.06);
 }
 
 /* 검색 입력 */
@@ -111,43 +102,45 @@ h1 {
   opacity: 0.9;
 }
 
-/* =========================
-   테이블 감싸는 가로 스크롤 영역
-   ========================= */
+/* 테이블 래퍼: 가로 스크롤만 허용 */
 .table-wrapper {
   width: 100%;
-  margin-top: 8px;
-  overflow-x: auto;              /* 테이블만 가로 스크롤 */
+  margin-top: 10px;
+  overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 
 /* 테이블 */
 table {
   width: 100%;
-  min-width: 720px;              /* 화면보다 넓게 잡아서 가로 스크롤 유도 */
+  min-width: 720px;
   border-collapse: collapse;
   font-size: 13px;
 }
 
-/* 헤더: 표 안에서만 상단 고정 */
+/* 헤더: 검색창 바로 아래 고정, 좌우는 내용과 같이 이동 */
 thead {
   background-color: #f7f7f9;
   position: sticky;
-  top: 0;
-  z-index: 10;
+  top: var(--header-offset);
+  z-index: 800;
 }
 thead th {
   background-color: #f7f7f9;
 }
 
 th, td {
-  padding: 4px 6px;
+  padding: 3px 4px;
   border-bottom: 1px solid #e0e0e0;
-  text-align: left;              /* 기본은 왼쪽 정렬 */
-  white-space: nowrap;           /* 줄바꿈 금지 */
+  white-space: nowrap;
 }
 
-/* 숫자 열은 가운데 정렬 */
+/* 기본 정렬: 왼쪽 */
+th, td {
+  text-align: left;
+}
+
+/* 숫자/코드 열은 가운데 정렬 + 폭 최소화 */
 th:nth-child(1),
 th:nth-child(3),
 th:nth-child(4),
@@ -159,6 +152,11 @@ td:nth-child(5) {
   text-align: center;
 }
 
+th:nth-child(1), td:nth-child(1) { width: 60px; }   /* INDEX */
+th:nth-child(3), td:nth-child(3) { width: 50px; }   /* Joint */
+th:nth-child(4), td:nth-child(4) { width: 110px; }  /* W/D No */
+th:nth-child(5), td:nth-child(5) { width: 100px; }  /* Date */
+
 tbody tr:nth-child(odd) {
   background: #fcfcff;
 }
@@ -166,23 +164,17 @@ tbody tr:hover {
   background: #eef6ff;
 }
 
-/* 클릭해서 선택된 행 하이라이트 - 더 눈에 띄게 */
+/* 선택된 행 하이라이트 */
 tbody tr.selected {
   background: #ffe9a3 !important;
   font-weight: 600;
   box-shadow: inset 0 0 0 2px #f4b400;
 }
 
-/* 모바일 대응 */
-@media (max-width: 600px) {
-  h1 { font-size: 18px; }
-  #searchInput { font-size: 17px; padding: 12px 42px 12px 16px; }
-}
-
-/* ★ PC 전용 뒤로가기 버튼 ★*/
+/* PC 하단 뒤로가기 버튼 */
 .pc-back-btn {
   display: none;
-  margin-top: 14px;
+  margin-top: 16px;
   padding: 10px 16px;
   background: #2563eb;
   color: #fff;
@@ -191,45 +183,82 @@ tbody tr.selected {
   font-size: 14px;
   font-weight: 600;
 }
-
-/* PC에서만 보이도록 */
 @media (min-width: 801px) {
   .pc-back-btn {
     display: inline-block;
   }
 }
+
+/* 모바일 */
+@media (max-width: 600px) {
+  h1 { font-size: 18px; }
+  #searchInput { font-size: 17px; padding: 12px 42px 12px 16px; }
+}
+
+/* 로딩 오버레이 */
+#loadingOverlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(255,255,255,0.7);
+  display: none;          /* flex 로 바꿔서 표시 */
+  align-items: center;
+  justify-content: center;
+  z-index: 2000;
+  font-size: 15px;
+  font-weight: 600;
+  color: #333;
+}
+.loading-box {
+  padding: 14px 18px;
+  border-radius: 12px;
+  background: #ffffff;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.spinner {
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  border: 2px solid #d0d0d0;
+  border-top-color: #2563eb;
+  animation: spin 0.7s linear infinite;
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
 </style>
 </head>
 
 <body>
+<div id="loadingOverlay">
+  <div class="loading-box">
+    <div class="spinner"></div>
+    <span id="loadingText">로딩 중...</span>
+  </div>
+</div>
+
 <div class="container">
   
-  <!-- 상단 영역 -->
+  <!-- 제목 / 상단 -->
   <div class="top-bar">
     <div class="title-row">
       <h1>대공 PKG3 WIR 현황</h1>
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
-    <!-- 뒤로가기 버튼 -->
+    <!-- 뒤로가기 -->
     <a href="https://kdy5642-lgtm.github.io/KDY/"
-       style="display:inline-block; margin-bottom:8px; padding:8px 14px;
+       style="display:inline-block; margin-top:6px; padding:8px 14px;
               background:#2563eb; color:#fff; text-decoration:none;
               border-radius:8px; font-size:14px; font-weight:600;">
       ◀ 뒤로가기
     </a>
+  </div>
 
-    <!-- 라디오 (모양만) -->
-    <div class="search-modes">
-      <label><input type="radio" name="mode" value="all" checked><span>통합 검색</span></label>
-      <label><input type="radio" disabled><span style="opacity:.5;">INDEX</span></label>
-      <label><input type="radio" disabled><span style="opacity:.5;">ISO</span></label>
-      <label><input type="radio" disabled><span style="opacity:.5;">JOINT</span></label>
-      <label><input type="radio" disabled><span style="opacity:.5;">W/D No</span></label>
-      <label><input type="radio" disabled><span style="opacity:.5;">DATE</span></label>
-    </div>
-
-    <!-- 검색입력 -->
+  <!-- 검색창: 항상 상단 고정 -->
+  <div class="search-sticky">
     <div class="search-box">
       <div class="search-input-wrapper">
         <input id="searchInput" type="text"
@@ -239,23 +268,23 @@ tbody tr.selected {
     </div>
   </div>
 
-  <!-- 결과 테이블 : 테이블 래퍼로 가로 스크롤 처리 -->
+  <!-- 테이블 -->
   <div class="table-wrapper">
     <table>
       <thead>
         <tr>
-          <th style="width:80px;">INDEX</th>
+          <th>INDEX</th>
           <th>ISO 도면번호</th>
-          <th style="width:80px;">Joint</th>
-          <th style="width:130px;">W/D No</th>
-          <th style="width:110px;">Date</th>
+          <th>Joint</th>
+          <th>W/D No</th>
+          <th>Date</th>
         </tr>
       </thead>
       <tbody id="resultBody"></tbody>
     </table>
   </div>
 
-  <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ -->
+  <!-- PC 하단 뒤로가기 -->
   <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
     ◀ 뒤로가기 (PC)
   </a>
@@ -263,16 +292,30 @@ tbody tr.selected {
 </div>
 
 <script>
-// -------------------------------------------
-// wirdata.txt → 자동 로드할 배열
-// 예상 컬럼 구조 (탭/공백/쉼표 구분):
-// INDEX | ISO | JOINT | W/D No | DATE
-// -------------------------------------------
+// ---------------------- 공통 로딩 오버레이 ----------------------
+const overlay = document.getElementById("loadingOverlay");
+const loadingTextEl = document.getElementById("loadingText");
+
+function showLoading(msg) {
+  if (msg) loadingTextEl.textContent = msg;
+  overlay.style.display = "flex";
+}
+
+function hideLoading() {
+  overlay.style.display = "none";
+}
+
+// ---------------------- 검색창 / 헤더 높이 계산 ----------------------
+function updateHeaderOffset() {
+  const bar = document.querySelector(".search-sticky");
+  if (!bar) return;
+  const h = bar.offsetHeight;
+  document.documentElement.style.setProperty("--header-offset", h + "px");
+}
+
+// ---------------------- 데이터 로드 및 파싱 ----------------------
 let rawData = [];
 
-// -------------------------------------------
-// 텍스트 파싱 (+ 소문자 캐시)
-// -------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
@@ -281,17 +324,19 @@ function parseTextToData(text) {
     const trimmed = lines[i].trim();
     if (!trimmed) continue;
 
+    // 탭 / 쉼표 / 공백 구분
     let cols = trimmed.split(/[\t, ]+/g);
-    if (cols.length < 5) continue; // 최소 5개 컬럼 필요
+    if (cols.length < 5) continue;
 
     const c0 = cols[0];                 // INDEX
     const c1 = cols[1];                 // ISO
     const c2 = cols[2];                 // JOINT
     const c3 = cols[3];                 // W/D No
-    const c4 = cols.slice(4).join(" "); // DATE (공백 포함 가능)
+    const c4 = cols.slice(4).join(" "); // DATE
 
     const row = [c0, c1, c2, c3, c4];
 
+    // 소문자 캐시
     row._lc = [
       String(c0).toLowerCase(),
       String(c1).toLowerCase(),
@@ -302,28 +347,25 @@ function parseTextToData(text) {
 
     parsed.push(row);
   }
-
   return parsed;
 }
 
-// -------------------------------------------
-// wirdata.txt 로드
-// -------------------------------------------
 async function loadData() {
+  showLoading("데이터 불러오는 중...");
   try {
     const res = await fetch("wirdata.txt?_=" + Date.now());
     const text = await res.text();
     rawData = parseTextToData(text);
-    renderList();
+    hideLoading();
+    renderList(false); // 처음 렌더링 시엔 별도 로딩 문구 표시 안 함
   } catch (e) {
     console.error(e);
+    hideLoading();
     alert("wirdata.txt 파일을 불러오지 못했습니다.");
   }
 }
 
-// -------------------------------------------
-// 행 클릭 시 하이라이트
-// -------------------------------------------
+// ---------------------- 행 클릭 하이라이트 ----------------------
 function handleRowClick(e) {
   const tbody = document.getElementById("resultBody");
   const rows = tbody.querySelectorAll("tr");
@@ -331,14 +373,13 @@ function handleRowClick(e) {
   e.currentTarget.classList.add("selected");
 }
 
-// -------------------------------------------
-// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시, 통합 검색)
-// -------------------------------------------
-function renderList() {
+// ---------------------- 필터 + 렌더링 (통합검색) ----------------------
+function renderList(withLoading = true) {
+  if (withLoading) showLoading("검색 중...");
+
   const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
   const normKw = rawKw.replace(/[-_\s]/g, "");
   const tbody = document.getElementById("resultBody");
-
   const hasKeyword = rawKw.length > 0;
 
   tbody.innerHTML = "";
@@ -349,14 +390,9 @@ function renderList() {
     const lc = row._lc;
 
     if (hasKeyword) {
-      // 5개 컬럼 전체 통합 검색
       const joined = lc.join(" ");
       const joinedNorm = joined.replace(/[-_\s]/g, "");
-
-      const ok =
-        joined.includes(rawKw) ||
-        joinedNorm.includes(normKw);
-
+      const ok = joined.includes(rawKw) || joinedNorm.includes(normKw);
       if (!ok) continue;
     }
 
@@ -368,33 +404,33 @@ function renderList() {
       <td>${row[3]}</td>
       <td>${row[4]}</td>
     `;
-
-    // 클릭하면 한 줄 하이라이트
     tr.addEventListener("click", handleRowClick);
-
     frag.appendChild(tr);
   }
 
   tbody.appendChild(frag);
+  if (withLoading) hideLoading();
 }
 
-// 2초 디바운스
+// ---------------------- 이벤트 바인딩 ----------------------
 let filterTimer = null;
 const searchInputEl = document.getElementById("searchInput");
 
 searchInputEl.addEventListener("input", () => {
   if (filterTimer) clearTimeout(filterTimer);
-  filterTimer = setTimeout(renderList, 2000);
+  filterTimer = setTimeout(() => renderList(true), 2000); // 2초 디바운스
 });
 
-// X 버튼
 document.getElementById("clearBtn").addEventListener("click", () => {
   searchInputEl.value = "";
   searchInputEl.focus();
-  renderList();
+  renderList(true);
 });
 
-// 페이지 로드시 데이터 로딩
+window.addEventListener("resize", updateHeaderOffset);
+
+// 초기 실행
+updateHeaderOffset();
 loadData();
 </script>
 
