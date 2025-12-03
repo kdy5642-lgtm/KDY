@@ -9,7 +9,7 @@
 * { box-sizing: border-box; }
 
 :root {
-  /* 검색창 높이만큼 헤더를 아래로 내리기 위한 오프셋 (JS에서 세팅) */
+  /* 검색창 줄의 아래쪽 위치와 테이블 상단 차이만큼 세팅 (JS에서 정확히 계산) */
   --header-offset: 50px;
 }
 
@@ -18,7 +18,7 @@ body {
   background: #f0f2f5;
   margin: 0;
   padding: 0;
-  overflow-x: hidden; /* 페이지 전체 가로 스크롤 방지 */
+  overflow-x: hidden;
 }
 
 .container {
@@ -87,7 +87,7 @@ h1 {
 
 #searchInput {
   width: 100%;
-  padding: 8px 38px 8px 14px;  /* 크기 줄임 */
+  padding: 8px 38px 8px 14px;
   font-size: 15px;
   border-radius: 999px;
   border: 1px solid #ccc;
@@ -132,7 +132,7 @@ h1 {
 
 /* 테이블 */
 table {
-  width: 100%;
+  width: auto;          /* 내용만큼만 폭 사용 → ISO ~ Joint 여백 최소 */
   min-width: 720px;
   border-collapse: collapse;
   font-size: 13px;
@@ -172,10 +172,11 @@ td:nth-child(5) {
   text-align: center;
 }
 
-th:nth-child(1), td:nth-child(1) { width: 60px; }   /* INDEX */
-th:nth-child(3), td:nth-child(3) { width: 50px; }   /* Joint */
-th:nth-child(4), td:nth-child(4) { width: 110px; }  /* W/D No */
-th:nth-child(5), td:nth-child(5) { width: 100px; }  /* Date */
+/* INDEX / Joint / W/D / Date 폭 최소화해서 ISO 컬럼 옆 여백 줄이기 */
+th:nth-child(1), td:nth-child(1) { width: 55px; }   /* INDEX */
+th:nth-child(3), td:nth-child(3) { width: 45px; }   /* Joint */
+th:nth-child(4), td:nth-child(4) { width: 100px; }  /* W/D No */
+th:nth-child(5), td:nth-child(5) { width: 95px; }   /* Date */
 
 tbody tr:nth-child(odd) {
   background: #fcfcff;
@@ -322,12 +323,20 @@ function hideLoading() {
   overlay.style.display = "none";
 }
 
-// ---------------------- 검색창 높이에 맞춰 헤더 오프셋 조정 ----------------------
+// ---------------------- 검색창 / 테이블 위치 기준으로 헤더 오프셋 계산 ----------------------
 function updateHeaderOffset() {
-  const bar = document.querySelector(".search-sticky");
-  if (!bar) return;
-  const h = bar.offsetHeight;
-  document.documentElement.style.setProperty("--header-offset", h + "px");
+  const searchBar = document.querySelector(".search-sticky");
+  const wrapper = document.querySelector(".table-wrapper");
+  if (!searchBar || !wrapper) return;
+
+  const searchRect = searchBar.getBoundingClientRect();
+  const wrapperRect = wrapper.getBoundingClientRect();
+
+  // 테이블(wrapper) 내부에서 봤을 때, 검색줄의 아래쪽이 어느 위치인지 계산
+  // = 검색줄 bottom - wrapper top
+  const offset = searchRect.bottom - wrapperRect.top;
+
+  document.documentElement.style.setProperty("--header-offset", offset + "px");
 }
 
 // ---------------------- 데이터 로드 및 파싱 ----------------------
@@ -341,7 +350,6 @@ function parseTextToData(text) {
     const trimmed = lines[i].trim();
     if (!trimmed) continue;
 
-    // 탭 / 쉼표 / 공백 구분
     let cols = trimmed.split(/[\t, ]+/g);
     if (cols.length < 5) continue;
 
@@ -445,10 +453,13 @@ document.getElementById("clearBtn").addEventListener("click", () => {
 });
 
 window.addEventListener("resize", updateHeaderOffset);
+window.addEventListener("scroll", updateHeaderOffset);
 
 // 초기 실행
-updateHeaderOffset();
-loadData();
+window.addEventListener("load", () => {
+  updateHeaderOffset();
+  loadData();
+});
 </script>
 
 </body>
