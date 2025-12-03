@@ -13,6 +13,7 @@ body {
   background: #f0f2f5;
   margin: 0;
   padding: 0;
+  overflow-x: hidden; /* 페이지 전체 가로 스크롤 막기 */
 }
 
 .container {
@@ -113,28 +114,45 @@ h1 {
   opacity: 0.9;
 }
 
+/* =========================
+   테이블 감싸는 가로 스크롤 영역
+   ========================= */
+.table-wrapper {
+  width: 100%;
+  margin-top: 8px;
+  overflow-x: auto;              /* 테이블만 가로 스크롤 */
+  -webkit-overflow-scrolling: touch;
+}
+
 /* 테이블 */
 table {
   width: 100%;
+  min-width: 720px;              /* 화면보다 넓게 잡아서 가로 스크롤 유도 */
   border-collapse: collapse;
   font-size: 14px;
 }
 thead {
   background: #f7f7f9;
   position: sticky;
-  top: 108px;
+  top: 108px;                    /* 위의 검색바 높이만큼 여백 */
   z-index: 998;
 }
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
+  white-space: nowrap;           /* 셀 안에서 줄바꿈 금지 */
 }
 tbody tr:nth-child(odd) {
   background: #fcfcff;
 }
 tbody tr:hover {
   background: #eef6ff;
+}
+
+/* 클릭해서 선택된 행 하이라이트 */
+tbody tr.selected {
+  background: #fff4c2 !important; /* 노란톤 하이라이트 */
 }
 
 /* 모바일 대응 */
@@ -202,19 +220,21 @@ tbody tr:hover {
     </div>
   </div>
 
-  <!-- 결과 테이블 -->
-  <table>
-    <thead>
-      <tr>
-        <th style="width:80px;">INDEX</th>
-        <th>ISO 도면번호</th>
-        <th style="width:160px;">Joint</th>
-        <th style="width:140px;">W/D No</th>
-        <th style="width:160px;">Date</th>
-      </tr>
-    </thead>
-    <tbody id="resultBody"></tbody>
-  </table>
+  <!-- 결과 테이블 : 테이블 래퍼로 가로 스크롤 처리 -->
+  <div class="table-wrapper">
+    <table>
+      <thead>
+        <tr>
+          <th style="width:80px;">INDEX</th>
+          <th>ISO 도면번호</th>
+          <th style="width:160px;">Joint</th>
+          <th style="width:140px;">W/D No</th>
+          <th style="width:160px;">Date</th>
+        </tr>
+      </thead>
+      <tbody id="resultBody"></tbody>
+    </table>
+  </div>
 
   <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ -->
   <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
@@ -283,6 +303,16 @@ async function loadData() {
 }
 
 // -------------------------------------------
+// 행 클릭 시 하이라이트
+// -------------------------------------------
+function handleRowClick(e) {
+  const tbody = document.getElementById("resultBody");
+  const rows = tbody.querySelectorAll("tr");
+  rows.forEach(r => r.classList.remove("selected"));
+  e.currentTarget.classList.add("selected");
+}
+
+// -------------------------------------------
 // 필터 + 렌더링 (2초 디바운스, -/_/공백 무시)
 // -------------------------------------------
 function renderList() {
@@ -336,6 +366,10 @@ function renderList() {
       <td>${row[3]}</td>
       <td>${row[4]}</td>
     `;
+
+    // 클릭하면 한 줄 하이라이트
+    tr.addEventListener("click", handleRowClick);
+
     frag.appendChild(tr);
   }
 
