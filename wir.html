@@ -188,6 +188,7 @@ tbody tr:hover {
       <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
       <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
       <label><input type="radio" name="mode" value="joint"><span>JOINT 검색</span></label>
+      <label><input type="radio" name="mode" value="wdno"><span>W/D No 검색</span></label>
       <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
     </div>
 
@@ -208,6 +209,7 @@ tbody tr:hover {
         <th style="width:80px;">INDEX</th>
         <th>ISO 도면번호</th>
         <th style="width:160px;">Joint</th>
+        <th style="width:140px;">W/D No</th>
         <th style="width:160px;">Date</th>
       </tr>
     </thead>
@@ -224,6 +226,8 @@ tbody tr:hover {
 <script>
 // -------------------------------------------
 // wirdata.txt → 자동 로드할 배열
+// 예상 컬럼 구조 (탭/공백/쉼표 구분):
+// INDEX | ISO | JOINT | W/D No | DATE
 // -------------------------------------------
 let rawData = [];
 
@@ -239,20 +243,22 @@ function parseTextToData(text) {
     if (!trimmed) continue;
 
     let cols = trimmed.split(/[\t, ]+/g);
-    if (cols.length < 4) continue;
+    if (cols.length < 5) continue; // 최소 5개 컬럼 필요
 
-    const c0 = cols[0];
-    const c1 = cols[1];
-    const c2 = cols[2];
-    const c3 = cols.slice(3).join(" ");
+    const c0 = cols[0];                 // INDEX
+    const c1 = cols[1];                 // ISO
+    const c2 = cols[2];                 // JOINT
+    const c3 = cols[3];                 // W/D No
+    const c4 = cols.slice(4).join(" "); // DATE (공백 포함 가능)
 
-    const row = [c0, c1, c2, c3];
+    const row = [c0, c1, c2, c3, c4];
 
     row._lc = [
       String(c0).toLowerCase(),
       String(c1).toLowerCase(),
       String(c2).toLowerCase(),
-      String(c3).toLowerCase()
+      String(c3).toLowerCase(),
+      String(c4).toLowerCase()
     ];
 
     parsed.push(row);
@@ -298,11 +304,13 @@ function renderList() {
       const index = lc[0];
       const iso   = lc[1];
       const joint = lc[2];
-      const date  = lc[3];
+      const wdno  = lc[3];
+      const date  = lc[4];
 
       const indexNorm = index.replace(/[-_\s]/g, "");
       const isoNorm   = iso.replace(/[-_\s]/g, "");
       const jointNorm = joint.replace(/[-_\s]/g, "");
+      const wdnoNorm  = wdno.replace(/[-_\s]/g, "");
       const dateNorm  = date.replace(/[-_\s]/g, "");
 
       let ok = false;
@@ -312,6 +320,8 @@ function renderList() {
         ok = iso.includes(rawKw) || isoNorm.includes(normKw);
       else if (mode === "joint")
         ok = joint.includes(rawKw) || jointNorm.includes(normKw);
+      else if (mode === "wdno")
+        ok = wdno.includes(rawKw) || wdnoNorm.includes(normKw);
       else if (mode === "Date")
         ok = date.includes(rawKw) || dateNorm.includes(normKw);
 
@@ -324,6 +334,7 @@ function renderList() {
       <td>${row[1]}</td>
       <td>${row[2]}</td>
       <td>${row[3]}</td>
+      <td>${row[4]}</td>
     `;
     frag.appendChild(tr);
   }
