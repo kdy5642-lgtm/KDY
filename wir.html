@@ -9,8 +9,8 @@
 * { box-sizing: border-box; }
 
 :root {
-  /* 검색창 높이만큼 헤더를 아래로 내리기 위한 오프셋 */
-  --header-offset: 56px;
+  /* 검색창 높이만큼 헤더를 아래로 내리기 위한 오프셋 (JS에서 세팅) */
+  --header-offset: 50px;
 }
 
 body {
@@ -29,11 +29,11 @@ body {
   padding: 12px 14px 40px;
 }
 
-/* 상단(제목/뒤로가기) */
+/* 상단(제목/배지) */
 .top-bar {
   background: #ffffff;
-  padding: 8px 8px 6px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+  padding: 8px 8px 4px;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.04);
 }
 
 .title-row {
@@ -58,7 +58,7 @@ h1 {
   white-space: nowrap;
 }
 
-/* 검색창만 sticky */
+/* 검색창 줄: 항상 상단 고정 */
 .search-sticky {
   position: sticky;
   top: 0;
@@ -68,9 +68,16 @@ h1 {
   box-shadow: 0 2px 4px rgba(0,0,0,0.06);
 }
 
+/* 검색줄 구성: 검색창 + 뒤로가기 버튼 */
+.search-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
 /* 검색 입력 */
 .search-box {
-  width: 100%;
+  flex: 1 1 auto;
 }
 
 .search-input-wrapper {
@@ -80,8 +87,8 @@ h1 {
 
 #searchInput {
   width: 100%;
-  padding: 10px 42px 10px 16px;
-  font-size: 16px;
+  padding: 8px 38px 8px 14px;  /* 크기 줄임 */
+  font-size: 15px;
   border-radius: 999px;
   border: 1px solid #ccc;
   outline: none;
@@ -89,17 +96,30 @@ h1 {
 
 .clear-btn {
   position: absolute;
-  right: 14px;
+  right: 12px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
   background: none;
-  font-size: 20px;
+  font-size: 18px;
   cursor: pointer;
   opacity: 0.5;
 }
 .clear-btn:hover {
   opacity: 0.9;
+}
+
+/* 검색창 옆 뒤로가기 버튼 */
+.search-back-btn {
+  flex: 0 0 auto;
+  padding: 8px 12px;
+  background:#2563eb;
+  color:#fff;
+  text-decoration:none;
+  border-radius:8px;
+  font-size:13px;
+  font-weight:600;
+  white-space:nowrap;
 }
 
 /* 테이블 래퍼: 가로 스크롤만 허용 */
@@ -192,7 +212,7 @@ tbody tr.selected {
 /* 모바일 */
 @media (max-width: 600px) {
   h1 { font-size: 18px; }
-  #searchInput { font-size: 17px; padding: 12px 42px 12px 16px; }
+  #searchInput { font-size: 16px; padding: 10px 38px 10px 14px; }
 }
 
 /* 로딩 오버레이 */
@@ -247,24 +267,21 @@ tbody tr.selected {
       <h1>대공 PKG3 WIR 현황</h1>
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
-
-    <!-- 뒤로가기 -->
-    <a href="https://kdy5642-lgtm.github.io/KDY/"
-       style="display:inline-block; margin-top:6px; padding:8px 14px;
-              background:#2563eb; color:#fff; text-decoration:none;
-              border-radius:8px; font-size:14px; font-weight:600;">
-      ◀ 뒤로가기
-    </a>
   </div>
 
-  <!-- 검색창: 항상 상단 고정 -->
+  <!-- 검색창: 항상 상단 고정 + 옆에 뒤로가기 -->
   <div class="search-sticky">
-    <div class="search-box">
-      <div class="search-input-wrapper">
-        <input id="searchInput" type="text"
-               placeholder="예: 0001, 00701, DK-GW-048, 20250113 등" />
-        <button id="clearBtn" class="clear-btn">×</button>
+    <div class="search-row">
+      <div class="search-box">
+        <div class="search-input-wrapper">
+          <input id="searchInput" type="text"
+                 placeholder="예: 0001, 00701, DK-GW-048, 20250113 등" />
+          <button id="clearBtn" class="clear-btn">×</button>
+        </div>
       </div>
+      <a href="https://kdy5642-lgtm.github.io/KDY/" class="search-back-btn">
+        ◀ 뒤로가기
+      </a>
     </div>
   </div>
 
@@ -305,7 +322,7 @@ function hideLoading() {
   overlay.style.display = "none";
 }
 
-// ---------------------- 검색창 / 헤더 높이 계산 ----------------------
+// ---------------------- 검색창 높이에 맞춰 헤더 오프셋 조정 ----------------------
 function updateHeaderOffset() {
   const bar = document.querySelector(".search-sticky");
   if (!bar) return;
@@ -357,7 +374,7 @@ async function loadData() {
     const text = await res.text();
     rawData = parseTextToData(text);
     hideLoading();
-    renderList(false); // 처음 렌더링 시엔 별도 로딩 문구 표시 안 함
+    renderList(false); // 처음 렌더링 시엔 "검색 중" 문구는 안 띄움
   } catch (e) {
     console.error(e);
     hideLoading();
