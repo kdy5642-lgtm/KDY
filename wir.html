@@ -24,14 +24,11 @@ body {
   padding: 12px 14px 40px;
 }
 
-/* 상단 고정 바 */
+/* 상단 영역(이제 sticky 아님, 그냥 일반) */
 .top-bar {
-  position: sticky;
-  top: 0;
-  z-index: 999;
   background: #ffffff;
-  padding: 10px 8px 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  padding: 8px 8px 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 /* 제목 */
@@ -43,13 +40,13 @@ body {
   gap: 8px;
 }
 h1 {
-  margin: 0;
+  margin: 0 0 6px 0;
   font-size: 20px;
   font-weight: 700;
 }
 .badge-fast {
   font-size: 11px;
-  padding: 3px 8px;
+  padding: 2px 7px;
   background: #e6f0ff;
   border: 1px solid #bdd3ff;
   color: #2755c7;
@@ -57,20 +54,20 @@ h1 {
   white-space: nowrap;
 }
 
-/* 라디오 버튼 */
+/* 라디오 버튼 (모양만 유지, 검색엔 영향 없음) */
 .search-modes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px 14px;
-  margin: 10px 0 8px;
+  gap: 8px 10px;
+  margin: 4px 0 6px;
 }
 
 .search-modes label {
-  font-size: 14px;
+  font-size: 13px;
   display: flex;
   align-items: center;
   gap: 4px;
-  padding: 4px 10px;
+  padding: 3px 9px;
   border-radius: 999px;
   background: #f6f7fb;
   cursor: pointer;
@@ -92,8 +89,8 @@ h1 {
 
 #searchInput {
   width: 100%;
-  padding: 14px 48px 14px 18px;
-  font-size: 17px;
+  padding: 10px 42px 10px 16px;
+  font-size: 16px;
   border-radius: 999px;
   border: 1px solid #ccc;
   outline: none;
@@ -101,12 +98,12 @@ h1 {
 
 .clear-btn {
   position: absolute;
-  right: 16px;
+  right: 14px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
   background: none;
-  font-size: 22px;
+  font-size: 20px;
   cursor: pointer;
   opacity: 0.5;
 }
@@ -129,26 +126,39 @@ table {
   width: 100%;
   min-width: 720px;              /* 화면보다 넓게 잡아서 가로 스크롤 유도 */
   border-collapse: collapse;
-  font-size: 14px;
+  font-size: 13px;
 }
 
-/* 헤더: 상단 고정 */
+/* 헤더: 표 안에서만 상단 고정 */
 thead {
   background-color: #f7f7f9;
   position: sticky;
-  top: 108px;                    /* 검색창 아래에 딱 붙게 (필요하면 숫자만 조정) */
-  z-index: 998;
+  top: 0;
+  z-index: 10;
 }
 thead th {
-  background-color: #f7f7f9;     /* 밑 행 안 비치게 불투명 배경 */
+  background-color: #f7f7f9;
 }
 
 th, td {
-  padding: 8px 10px;
+  padding: 4px 6px;
   border-bottom: 1px solid #e0e0e0;
-  text-align: center;
-  white-space: nowrap;           /* 셀 줄바꿈 금지 */
+  text-align: left;              /* 기본은 왼쪽 정렬 */
+  white-space: nowrap;           /* 줄바꿈 금지 */
 }
+
+/* 숫자 열은 가운데 정렬 */
+th:nth-child(1),
+th:nth-child(3),
+th:nth-child(4),
+th:nth-child(5),
+td:nth-child(1),
+td:nth-child(3),
+td:nth-child(4),
+td:nth-child(5) {
+  text-align: center;
+}
+
 tbody tr:nth-child(odd) {
   background: #fcfcff;
 }
@@ -156,27 +166,29 @@ tbody tr:hover {
   background: #eef6ff;
 }
 
-/* 클릭해서 선택된 행 하이라이트 */
+/* 클릭해서 선택된 행 하이라이트 - 더 눈에 띄게 */
 tbody tr.selected {
-  background: #fff4c2 !important; /* 노란톤 하이라이트 */
+  background: #ffe9a3 !important;
+  font-weight: 600;
+  box-shadow: inset 0 0 0 2px #f4b400;
 }
 
 /* 모바일 대응 */
 @media (max-width: 600px) {
   h1 { font-size: 18px; }
-  #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; }
+  #searchInput { font-size: 17px; padding: 12px 42px 12px 16px; }
 }
 
 /* ★ PC 전용 뒤로가기 버튼 ★*/
 .pc-back-btn {
   display: none;
-  margin-top: 18px;
-  padding: 12px 18px;
+  margin-top: 14px;
+  padding: 10px 16px;
   background: #2563eb;
   color: #fff;
   text-decoration: none;
   border-radius: 8px;
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
 }
 
@@ -192,35 +204,36 @@ tbody tr.selected {
 <body>
 <div class="container">
   
-  <!-- 상단 고정 영역 -->
+  <!-- 상단 영역 -->
   <div class="top-bar">
     <div class="title-row">
       <h1>대공 PKG3 WIR 현황</h1>
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
-    <!-- 모바일/PC 공용 상단 뒤로가기 버튼 -->
+    <!-- 뒤로가기 버튼 -->
     <a href="https://kdy5642-lgtm.github.io/KDY/"
-       style="display:inline-block; margin-top:10px; padding:10px 16px;
+       style="display:inline-block; margin-bottom:8px; padding:8px 14px;
               background:#2563eb; color:#fff; text-decoration:none;
-              border-radius:8px; font-size:14px;">
+              border-radius:8px; font-size:14px; font-weight:600;">
       ◀ 뒤로가기
     </a>
 
-    <!-- 라디오 선택 -->
+    <!-- 라디오 (모양만) -->
     <div class="search-modes">
-      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
-      <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
-      <label><input type="radio" name="mode" value="joint"><span>JOINT 검색</span></label>
-      <label><input type="radio" name="mode" value="wdno"><span>W/D No 검색</span></label>
-      <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
+      <label><input type="radio" name="mode" value="all" checked><span>통합 검색</span></label>
+      <label><input type="radio" disabled><span style="opacity:.5;">INDEX</span></label>
+      <label><input type="radio" disabled><span style="opacity:.5;">ISO</span></label>
+      <label><input type="radio" disabled><span style="opacity:.5;">JOINT</span></label>
+      <label><input type="radio" disabled><span style="opacity:.5;">W/D No</span></label>
+      <label><input type="radio" disabled><span style="opacity:.5;">DATE</span></label>
     </div>
 
     <!-- 검색입력 -->
     <div class="search-box">
       <div class="search-input-wrapper">
         <input id="searchInput" type="text"
-               placeholder="예: 0001, 00701, 02, 251126 등" />
+               placeholder="예: 0001, 00701, DK-GW-048, 20250113 등" />
         <button id="clearBtn" class="clear-btn">×</button>
       </div>
     </div>
@@ -233,9 +246,9 @@ tbody tr.selected {
         <tr>
           <th style="width:80px;">INDEX</th>
           <th>ISO 도면번호</th>
-          <th style="width:160px;">Joint</th>
-          <th style="width:140px;">W/D No</th>
-          <th style="width:160px;">Date</th>
+          <th style="width:80px;">Joint</th>
+          <th style="width:130px;">W/D No</th>
+          <th style="width:110px;">Date</th>
         </tr>
       </thead>
       <tbody id="resultBody"></tbody>
@@ -319,10 +332,9 @@ function handleRowClick(e) {
 }
 
 // -------------------------------------------
-// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시)
+// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시, 통합 검색)
 // -------------------------------------------
 function renderList() {
-  const mode = document.querySelector('input[name="mode"]:checked').value;
   const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
   const normKw = rawKw.replace(/[-_\s]/g, "");
   const tbody = document.getElementById("resultBody");
@@ -337,29 +349,13 @@ function renderList() {
     const lc = row._lc;
 
     if (hasKeyword) {
-      const index = lc[0];
-      const iso   = lc[1];
-      const joint = lc[2];
-      const wdno  = lc[3];
-      const date  = lc[4];
+      // 5개 컬럼 전체 통합 검색
+      const joined = lc.join(" ");
+      const joinedNorm = joined.replace(/[-_\s]/g, "");
 
-      const indexNorm = index.replace(/[-_\s]/g, "");
-      const isoNorm   = iso.replace(/[-_\s]/g, "");
-      const jointNorm = joint.replace(/[-_\s]/g, "");
-      const wdnoNorm  = wdno.replace(/[-_\s]/g, "");
-      const dateNorm  = date.replace(/[-_\s]/g, "");
-
-      let ok = false;
-      if (mode === "index")
-        ok = index.includes(rawKw) || indexNorm.includes(normKw);
-      else if (mode === "iso")
-        ok = iso.includes(rawKw) || isoNorm.includes(normKw);
-      else if (mode === "joint")
-        ok = joint.includes(rawKw) || jointNorm.includes(normKw);
-      else if (mode === "wdno")
-        ok = wdno.includes(rawKw) || wdnoNorm.includes(normKw);
-      else if (mode === "Date")
-        ok = date.includes(rawKw) || dateNorm.includes(normKw);
+      const ok =
+        joined.includes(rawKw) ||
+        joinedNorm.includes(normKw);
 
       if (!ok) continue;
     }
@@ -396,11 +392,6 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   searchInputEl.value = "";
   searchInputEl.focus();
   renderList();
-});
-
-// 라디오 변경 시 필터
-document.querySelectorAll('input[name="mode"]').forEach(r => {
-  r.addEventListener("change", renderList);
 });
 
 // 페이지 로드시 데이터 로딩
