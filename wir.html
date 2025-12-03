@@ -64,12 +64,12 @@
         white-space: nowrap;
     }
 
-    /* 테이블 전체 영역 (헤더 + 바디 같이 스크롤) */
+    /* 테이블 전체 영역 */
     .table-wrapper {
         margin-top: 4px;
-        overflow-x: auto;      /* 모바일에서 가로 스크롤 */
-        background: #ffffff;   /* 우측으로 밀어도 흰 배경 유지 */
-        position: relative;    /* sticky 헤더 z-index 기준 */
+        overflow-x: auto;
+        background: #ffffff;
+        position: relative;
     }
 
     /* NOTE 컬럼 포함한 전체 grid 구조 */
@@ -87,10 +87,10 @@
         background: white;
         align-items: center;
         font-size: 15px;
-        min-width: 880px; /* 화면보다 넓어지면 가로 스크롤 생김 */
+        min-width: 880px;
     }
 
-    /* 헤더 줄 (테이블 안에 두고 sticky) */
+    /* 헤더 */
     .table-header {
         border-top: 1px solid #ddd;
         border-bottom: 2px solid #ddd;
@@ -98,25 +98,20 @@
         font-weight: 700;
 
         position: sticky;
-        top: 0;          /* 화면 상단에 고정 */
-        z-index: 10;     /* 데이터 줄보다 위로 */
+        top: 0;
+        z-index: 10;
     }
 
     .table-header div {
-        text-align: center; /* 헤더 전체 가운데 정렬 */
+        text-align: center;
     }
 
-    /* 데이터 줄 홀짝 구분 */
+    /* 홀짝 구분 */
     #tableBody .table-row:nth-child(even) {
         background: #fafafa;
     }
 
-    /* ISO 가운데 정렬 */
-    .iso-cell {
-        text-align: center;
-    }
-
-    /* 숫자/코드 칼럼은 기본적으로 가운데 정렬 */
+    /* 숫자/코드 칼럼 기본 정렬 */
     #tableBody .table-row > div:nth-child(1),
     #tableBody .table-row > div:nth-child(3),
     #tableBody .table-row > div:nth-child(4),
@@ -124,20 +119,25 @@
         text-align: center;
     }
 
-    /* NOTE 칸 */
     .note-cell {
         color: #999;
         padding-left: 8px;
         text-align: left;
     }
 
-    /* 행 호버 하이라이트 */
+    /* 줄바꿈 포함된 셀 자동 왼쪽정렬 */
+    .has-newline {
+        text-align: left !important;
+        white-space: pre-line !important;
+    }
+
+    /* 행 호버 */
     #tableBody .table-row:hover {
         background: #eaf1ff;
         transition: 0.15s;
     }
 
-    /* 클릭해서 선택된 행(노란색) */
+    /* 선택된 행 */
     #tableBody .table-row.selected {
         background: #ffe9a3 !important;
         box-shadow: inset 0 0 0 2px #f4b400;
@@ -159,7 +159,6 @@
         display: none;
     }
 
-    /* 동그란 로딩 인디케이터 */
     .spinner {
         width: 40px;
         height: 40px;
@@ -171,12 +170,22 @@
     }
 
     @keyframes spin {
-        to {
-            transform: rotate(360deg);
+        to { transform: rotate(360deg); }
+    }
+
+    /* 모바일 전용: ISO를 항상 3줄 고정 + 왼쪽정렬 */
+    @media (max-width: 768px) {
+        .iso-cell {
+            white-space: pre-line !important;
+            line-height: 1.2;
+            height: calc(1.2em * 3);
+            overflow: hidden;
+            text-align: left !important;
         }
     }
 </style>
 </head>
+
 <body>
 <div id="loading-overlay">
     <div class="spinner"></div>
@@ -186,21 +195,15 @@
 <div class="container">
     <div class="top-title">대공 PKG3 WIR 현황</div>
 
-    <!-- 🔒 검색바: 항상 상단 고정 -->
     <div class="search-bar-wrap">
         <div class="search-row">
-            <input
-                id="searchInput"
-                class="search-input"
-                placeholder="예: 0001, 00701, DK-GW-048, 20250113 등"
-            />
+            <input id="searchInput" class="search-input"
+                placeholder="예: 0001, 00701, DK-GW-048, 20250113 등">
             <button class="back-btn" onclick="history.back()">뒤로가기</button>
         </div>
     </div>
 
-    <!-- 헤더 + 데이터 영역 (같이 가로 스크롤) -->
     <div class="table-wrapper">
-        <!-- 헤더 줄 -->
         <div class="table-header table-row">
             <div>INDEX</div>
             <div>ISO 도면번호</div>
@@ -210,7 +213,6 @@
             <div>Note</div>
         </div>
 
-        <!-- 데이터 영역 -->
         <div id="tableBody"></div>
     </div>
 </div>
@@ -218,25 +220,28 @@
 <script>
     let wirData = [];
 
-    // 로딩 오버레이 ON/OFF
     function showLoading(show) {
         document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
     }
 
-    // TXT 로드
+    function hasNewline(text) {
+        return text && (text.includes("\n") || text.includes("\\n"));
+    }
+
     async function loadData() {
         try {
             showLoading(true);
+
             const response = await fetch("wirdata.txt?_=" + Date.now());
             const text = await response.text();
+
             const lines = text.trim().split("\n");
 
             wirData = lines.map(line => {
-                // 탭 기준으로 파싱
                 const parts = line.split(/\t+/);
                 return {
                     index: parts[0] || "",
-                    iso:   parts[1] || "",
+                    iso:   (parts[1] || "").replace(/\\n/g, "\n"),
                     joint: parts[2] || "",
                     wd:    parts[3] || "",
                     date:  parts[4] || ""
@@ -244,6 +249,7 @@
             });
 
             renderTable(wirData);
+
         } catch (e) {
             console.error(e);
             alert("wirdata.txt 파일을 불러오지 못했습니다.");
@@ -252,7 +258,6 @@
         }
     }
 
-    // 테이블 렌더링
     function renderTable(list) {
         const body = document.getElementById("tableBody");
         body.innerHTML = "";
@@ -260,19 +265,18 @@
         list.forEach(row => {
             const div = document.createElement("div");
             div.className = "table-row";
+
             div.innerHTML = `
-                <div>${row.index}</div>
-                <div class="iso-cell">${row.iso}</div>
-                <div>${row.joint}</div>
-                <div>${row.wd}</div>
-                <div>${row.date}</div>
+                <div class="${hasNewline(row.index) ? 'has-newline' : ''}">${row.index}</div>
+                <div class="iso-cell ${hasNewline(row.iso) ? 'has-newline' : ''}">${row.iso}</div>
+                <div class="${hasNewline(row.joint) ? 'has-newline' : ''}">${row.joint}</div>
+                <div class="${hasNewline(row.wd) ? 'has-newline' : ''}">${row.wd}</div>
+                <div class="${hasNewline(row.date) ? 'has-newline' : ''}">${row.date}</div>
                 <div class="note-cell"></div>
             `;
 
-            // 클릭 시 노란 하이라이트
             div.addEventListener("click", () => {
-                document
-                    .querySelectorAll("#tableBody .table-row")
+                document.querySelectorAll("#tableBody .table-row")
                     .forEach(r => r.classList.remove("selected"));
                 div.classList.add("selected");
             });
@@ -281,9 +285,9 @@
         });
     }
 
-    // 통합 검색
     document.getElementById("searchInput").addEventListener("input", function () {
         const q = this.value.trim().toLowerCase();
+
         if (!q) {
             renderTable(wirData);
             return;
@@ -291,7 +295,6 @@
 
         showLoading(true);
 
-        // 입력 중에도 너무 깜빡이지 않게 살짝 딜레이
         setTimeout(() => {
             const filtered = wirData.filter(r => {
                 const line = (
@@ -309,7 +312,6 @@
         }, 150);
     });
 
-    // 초기 로드
     loadData();
 </script>
 </body>
