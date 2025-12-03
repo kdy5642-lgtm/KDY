@@ -355,4 +355,94 @@ function renderList() {
   const normKw = rawKw.replace(/[-_\s]/g, "");
   const tbody = document.getElementById("resultBody");
 
-  const hasKey
+  const hasKeyword = rawKw.length > 0;
+
+  tbody.innerHTML = "";
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < rawData.length; i++) {
+    const row = rawData[i];
+    const lc = row._lc;
+
+    if (hasKeyword) {
+      let ok = false;
+
+      if (mode === "index") {
+        // INDEX 컬럼만 검색
+        const indexVal = lc[0];
+        const indexNorm = indexVal.replace(/[-_\s]/g, "");
+        ok = indexVal.includes(rawKw) || indexNorm.includes(normKw);
+      } else {
+        // 통합 검색: 모든 컬럼
+        for (let c = 0; c < lc.length; c++) {
+          const val = lc[c];
+          const valNorm = val.replace(/[-_\s]/g, "");
+          if (val.includes(rawKw) || valNorm.includes(normKw)) {
+            ok = true;
+            break;
+          }
+        }
+      }
+
+      if (!ok) continue;
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td>${row[4]}</td>
+    `;
+
+    // 행 클릭 시 선택 하이라이트
+    tr.addEventListener("click", () => {
+      document
+        .querySelectorAll("#resultBody tr.selected-row")
+        .forEach(el => el.classList.remove("selected-row"));
+      tr.classList.add("selected-row");
+    });
+
+    frag.appendChild(tr);
+  }
+
+  tbody.appendChild(frag);
+}
+
+// 2초 디바운스
+let filterTimer = null;
+const searchInputEl = document.getElementById("searchInput");
+
+searchInputEl.addEventListener("input", () => {
+  if (filterTimer) clearTimeout(filterTimer);
+  filterTimer = setTimeout(renderList, 2000);
+});
+
+// X 버튼
+document.getElementById("clearBtn").addEventListener("click", () => {
+  searchInputEl.value = "";
+  searchInputEl.focus();
+  renderList();
+});
+
+// 검색 모드 변경 시 재필터
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener("change", renderList);
+});
+
+// 화면 좌/우 회전 시 로딩 마크 표시 후 재렌더
+window.addEventListener("orientationchange", () => {
+  showLoadingOverlay();
+  setTimeout(() => {
+    renderList();
+    hideLoadingOverlay();
+  }, 500);
+});
+
+// 페이지 로드시 데이터 로딩
+loadData();
+</script>
+
+</body>
+</html>
