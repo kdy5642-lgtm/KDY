@@ -2,362 +2,370 @@
 <html lang="ko">
 <head>
 <meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
 <title>대공 PKG3 WIR 현황</title>
 
 <style>
-    * { box-sizing: border-box; }
-    body {
-        margin: 0;
-        background: #f5f6fa;
-        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-    }
+* { box-sizing: border-box; }
 
-    .container {
-        max-width: 1100px;
-        margin: 0 auto;
-        padding: 0 10px 40px;
-    }
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  padding: 0;
+}
 
-    /* 상단 제목 */
-    .top-title {
-        font-size: 26px;
-        font-weight: 700;
-        padding: 16px 4px 8px;
-    }
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  background: #ffffff;
+  min-height: 100vh;
+  padding: 12px 14px 40px;
+}
 
-    /* 검색바 고정 영역 */
-    .search-bar-wrap {
-        position: sticky;
-        top: 0;
-        background: #f5f6fa;
-        padding: 8px 0 4px;
-        z-index: 1000;
-    }
+/* 상단 고정 바 */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #ffffff;
+  padding: 10px 8px 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
 
-    .search-row {
-        display: flex;
-        align-items: center;
-        gap: 10px;
-        margin-bottom: 6px;
-    }
+/* 제목 */
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+.badge-fast {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: #e6f0ff;
+  border: 1px solid #bdd3ff;
+  color: #2755c7;
+  border-radius: 999px;
+  white-space: nowrap;
+}
 
-    /* 검색창 */
-    .search-input {
-        flex: 1;
-        padding: 10px 14px;
-        font-size: 15px;
-        border: 1px solid #ccc;
-        border-radius: 8px;
-        outline: none;
-    }
+/* 라디오 버튼 */
+.search-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 10px 0 8px;
+}
 
-    /* 뒤로가기 버튼 */
-    .back-btn {
-        background: #2563eb;
-        border: none;
-        padding: 10px 16px;
-        font-size: 15px;
-        color: white;
-        border-radius: 8px;
-        cursor: pointer;
-        white-space: nowrap;
-    }
+.search-modes label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f6f7fb;
+  cursor: pointer;
+}
 
-    /* 테이블 전체 영역 */
-    .table-wrapper {
-        margin-top: 4px;
-        overflow-x: auto;      /* PC에서 가로 스크롤 */
-        background: #ffffff;
-        position: relative;
-    }
+.search-modes input[type="radio"] {
+  accent-color: #2563eb;
+}
 
-    /* 기본 grid 구조 (PC 기준) */
-    .table-row {
-        display: grid;
-        grid-template-columns:
-            80px   /* INDEX */
-            360px  /* ISO */
-            70px   /* Joint */
-            120px  /* W/D No */
-            120px  /* Date */
-            1fr;   /* Note */
-        padding: 4px 8px;
-        border-bottom: 1px solid #eee;
-        background: white;
-        align-items: center;
-        font-size: 15px;
-        min-width: 880px; /* PC에서는 넓게, 가로 스크롤 허용 */
-    }
+/* 검색 입력 */
+.search-box {
+  width: 100%;
+}
 
-    /* 헤더 줄 */
-    .table-header {
-        border-top: 1px solid #ddd;
-        border-bottom: 2px solid #ddd;
-        background: #f3f6ff;
-        font-weight: 700;
-        position: sticky;
-        top: 0;
-        z-index: 10;
-    }
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
 
-    .table-header div {
-        text-align: center;
-    }
+#searchInput {
+  width: 100%;
+  padding: 14px 48px 14px 18px;
+  font-size: 17px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  outline: none;
+}
 
-    /* 홀짝 배경 */
-    #tableBody .table-row:nth-child(even) {
-        background: #fafafa;
-    }
+.clear-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+.clear-btn:hover {
+  opacity: 0.9;
+}
 
-    /* 숫자/코드 칼럼 기본 가운데 정렬 */
-    #tableBody .table-row > div:nth-child(1),
-    #tableBody .table-row > div:nth-child(3),
-    #tableBody .table-row > div:nth-child(4),
-    #tableBody .table-row > div:nth-child(5) {
-        text-align: center;
-    }
+/* 테이블 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+thead {
+  background: #f7f7f9;
+  position: sticky;
+  top: 108px;
+  z-index: 998;
+}
+th, td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+}
+tbody tr:nth-child(odd) {
+  background: #fcfcff;
+}
+tbody tr:hover {
+  background: #eef6ff;
+}
 
-    .iso-cell {
-        text-align: center;
-        white-space: nowrap;
-    }
+/* 모바일 대응 */
+@media (max-width: 600px) {
+  h1 { font-size: 18px; }
+  #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; }
+}
 
-    .note-cell {
-        color: #999;
-        padding-left: 8px;
-        text-align: left;
-    }
+/* ★ PC 전용 뒤로가기 버튼 ★*/
+.pc-back-btn {
+  display: none;
+  margin-top: 18px;
+  padding: 12px 18px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
 
-    /* 줄바꿈(개행) 포함된 셀은 왼쪽 정렬 + 줄바꿈 표시 */
-    .has-newline {
-        text-align: left !important;
-        white-space: pre-line !important;
-    }
-
-    /* 행 호버 */
-    #tableBody .table-row:hover {
-        background: #eaf1ff;
-        transition: 0.15s;
-    }
-
-    /* 선택된 행 */
-    #tableBody .table-row.selected {
-        background: #ffe9a3 !important;
-        box-shadow: inset 0 0 0 2px #f4b400;
-        font-weight: 600;
-    }
-
-    /* 로딩 오버레이 */
-    #loading-overlay {
-        position: fixed;
-        inset: 0;
-        background: rgba(255,255,255,0.75);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-direction: column;
-        z-index: 3000;
-        font-size: 16px;
-        font-weight: 500;
-        display: none;
-    }
-
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border-radius: 50%;
-        border: 4px solid rgba(0,0,0,0.1);
-        border-top-color: #2563eb;
-        animation: spin 0.8s linear infinite;
-        margin-bottom: 8px;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    /* =========================
-       📱 모바일 전용 레이아웃
-       - 화면 폭에 맞게 가변 비율
-       - INDEX ~ DATE까지 한 화면에
-       - NOTE 컬럼은 폭 0으로 숨김
-       ========================= */
-    @media (max-width: 768px) {
-        .table-wrapper {
-            overflow-x: hidden;      /* 기본적으로 가로 스크롤 숨김 */
-        }
-
-        .table-row {
-            min-width: 100%;         /* 화면폭에 맞게 */
-            grid-template-columns:
-                0.7fr   /* INDEX  */
-                2.4fr   /* ISO    */
-                0.9fr   /* JOINT  */
-                1.1fr   /* W/D No */
-                1.1fr   /* DATE   */
-                0fr;    /* NOTE -> 폭 0 */
-        }
-
-        /* ISO는 모바일에서 자동 줄바꿈 + 왼쪽정렬 */
-        .iso-cell {
-            white-space: normal;
-            text-align: left;
-        }
-
-        /* NOTE 셀 내용은 안 보이게 (폭도 0이지만 혹시 몰라서) */
-        .table-row > div:nth-child(6) {
-            overflow: hidden;
-        }
-
-        /* 헤더도 같은 비율로 맞추기 */
-        .table-header {
-            grid-template-columns:
-                0.7fr
-                2.4fr
-                0.9fr
-                1.1fr
-                1.1fr
-                0fr;
-        }
-    }
+/* PC에서만 보이도록 */
+@media (min-width: 801px) {
+  .pc-back-btn {
+    display: inline-block;
+  }
+}
 </style>
 </head>
 
 <body>
-<div id="loading-overlay">
-    <div class="spinner"></div>
-    <div>로딩 중...</div>
-</div>
-
 <div class="container">
-    <div class="top-title">대공 PKG3 WIR 현황</div>
-
-    <!-- 검색바 (상단 고정) -->
-    <div class="search-bar-wrap">
-        <div class="search-row">
-            <input
-                id="searchInput"
-                class="search-input"
-                placeholder="예: 0001, 00701, DK-GW-048, 20250113 등"
-            />
-            <button class="back-btn" onclick="history.back()">뒤로가기</button>
-        </div>
+  
+  <!-- 상단 고정 영역 -->
+  <div class="top-bar">
+    <div class="title-row">
+      <h1>대공 PKG3 WIR 현황</h1>
+      <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
-    <!-- 헤더 + 데이터 영역 -->
-    <div class="table-wrapper">
-        <div class="table-header table-row">
-            <div>INDEX</div>
-            <div>ISO 도면번호</div>
-            <div>Joint</div>
-            <div>W/D No</div>
-            <div>Date</div>
-            <div>Note</div>
-        </div>
+    <!-- 모바일/PC 공용 상단 뒤로가기 버튼 -->
+    <a href="https://kdy5642-lgtm.github.io/KDY/"
+       style="display:inline-block; margin-top:10px; padding:10px 16px;
+              background:#2563eb; color:#fff; text-decoration:none;
+              border-radius:8px; font-size:14px;">
+      ◀ 뒤로가기
+    </a>
 
-        <div id="tableBody"></div>
+    <!-- 라디오 선택 -->
+    <div class="search-modes">
+      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
+      <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
+      <label><input type="radio" name="mode" value="joint"><span>JOINT 검색</span></label>
+      <label><input type="radio" name="mode" value="wdno"><span>W/D No 검색</span></label>
+      <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
     </div>
+
+    <!-- 검색입력 -->
+    <div class="search-box">
+      <div class="search-input-wrapper">
+        <input id="searchInput" type="text"
+               placeholder="예: 0001, 00701, 02, 251126 등" />
+        <button id="clearBtn" class="clear-btn">×</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- 결과 테이블 -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:80px;">INDEX</th>
+        <th>ISO 도면번호</th>
+        <th style="width:160px;">Joint</th>
+        <th style="width:140px;">W/D No</th>
+        <th style="width:160px;">Date</th>
+      </tr>
+    </thead>
+    <tbody id="resultBody"></tbody>
+  </table>
+
+  <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ -->
+  <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
+    ◀ 뒤로가기 (PC)
+  </a>
+
 </div>
 
 <script>
-    let wirData = [];
+// -------------------------------------------
+// wirdata.txt → 자동 로드할 배열
+// 예상 컬럼 구조 (탭/공백/쉼표 구분):
+// INDEX | ISO | JOINT | W/D No | DATE
+// -------------------------------------------
+let rawData = [];
 
-    function showLoading(show) {
-        document.getElementById("loading-overlay").style.display = show ? "flex" : "none";
+// -------------------------------------------
+// 텍스트 파싱 (+ 소문자 캐시)
+// -------------------------------------------
+function parseTextToData(text) {
+  const lines = text.trim().split("\n");
+  const parsed = [];
+
+  for (let i = 0; i < lines.length; i++) {
+    const trimmed = lines[i].trim();
+    if (!trimmed) continue;
+
+    let cols = trimmed.split(/[\t, ]+/g);
+    if (cols.length < 5) continue; // 최소 5개 컬럼 필요
+
+    const c0 = cols[0];                 // INDEX
+    const c1 = cols[1];                 // ISO
+    const c2 = cols[2];                 // JOINT
+    const c3 = cols[3];                 // W/D No
+    const c4 = cols.slice(4).join(" "); // DATE (공백 포함 가능)
+
+    const row = [c0, c1, c2, c3, c4];
+
+    row._lc = [
+      String(c0).toLowerCase(),
+      String(c1).toLowerCase(),
+      String(c2).toLowerCase(),
+      String(c3).toLowerCase(),
+      String(c4).toLowerCase()
+    ];
+
+    parsed.push(row);
+  }
+
+  return parsed;
+}
+
+// -------------------------------------------
+// wirdata.txt 로드
+// -------------------------------------------
+async function loadData() {
+  try {
+    const res = await fetch("wirdata.txt?_=" + Date.now());
+    const text = await res.text();
+    rawData = parseTextToData(text);
+    renderList();
+  } catch (e) {
+    console.error(e);
+    alert("wirdata.txt 파일을 불러오지 못했습니다.");
+  }
+}
+
+// -------------------------------------------
+// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시)
+// -------------------------------------------
+function renderList() {
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
+  const normKw = rawKw.replace(/[-_\s]/g, "");
+  const tbody = document.getElementById("resultBody");
+
+  const hasKeyword = rawKw.length > 0;
+
+  tbody.innerHTML = "";
+  const frag = document.createDocumentFragment();
+
+  for (let i = 0; i < rawData.length; i++) {
+    const row = rawData[i];
+    const lc = row._lc;
+
+    if (hasKeyword) {
+      const index = lc[0];
+      const iso   = lc[1];
+      const joint = lc[2];
+      const wdno  = lc[3];
+      const date  = lc[4];
+
+      const indexNorm = index.replace(/[-_\s]/g, "");
+      const isoNorm   = iso.replace(/[-_\s]/g, "");
+      const jointNorm = joint.replace(/[-_\s]/g, "");
+      const wdnoNorm  = wdno.replace(/[-_\s]/g, "");
+      const dateNorm  = date.replace(/[-_\s]/g, "");
+
+      let ok = false;
+      if (mode === "index")
+        ok = index.includes(rawKw) || indexNorm.includes(normKw);
+      else if (mode === "iso")
+        ok = iso.includes(rawKw) || isoNorm.includes(normKw);
+      else if (mode === "joint")
+        ok = joint.includes(rawKw) || jointNorm.includes(normKw);
+      else if (mode === "wdno")
+        ok = wdno.includes(rawKw) || wdnoNorm.includes(normKw);
+      else if (mode === "Date")
+        ok = date.includes(rawKw) || dateNorm.includes(normKw);
+
+      if (!ok) continue;
     }
 
-    function hasNewline(text) {
-        return text && (text.includes("\n") || text.includes("\\n"));
-    }
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${row[3]}</td>
+      <td>${row[4]}</td>
+    `;
+    frag.appendChild(tr);
+  }
 
-    async function loadData() {
-        try {
-            showLoading(true);
+  tbody.appendChild(frag);
+}
 
-            const response = await fetch("wirdata.txt?_=" + Date.now());
-            const text = await response.text();
-            const lines = text.trim().split("\n");
+// 2초 디바운스
+let filterTimer = null;
+const searchInputEl = document.getElementById("searchInput");
 
-            wirData = lines.map(line => {
-                const parts = line.split(/\t+/);
-                return {
-                    index: parts[0] || "",
-                    // ISO에 \n 문자열이 들어있으면 실제 줄바꿈으로 변경
-                    iso:   (parts[1] || "").replace(/\\n/g, "\n"),
-                    joint: parts[2] || "",
-                    wd:    parts[3] || "",
-                    date:  parts[4] || ""
-                };
-            });
+searchInputEl.addEventListener("input", () => {
+  if (filterTimer) clearTimeout(filterTimer);
+  filterTimer = setTimeout(renderList, 2000);
+});
 
-            renderTable(wirData);
-        } catch (e) {
-            console.error(e);
-            alert("wirdata.txt 파일을 불러오지 못했습니다.");
-        } finally {
-            showLoading(false);
-        }
-    }
+// X 버튼
+document.getElementById("clearBtn").addEventListener("click", () => {
+  searchInputEl.value = "";
+  searchInputEl.focus();
+  renderList();
+});
 
-    function renderTable(list) {
-        const body = document.getElementById("tableBody");
-        body.innerHTML = "";
+// 라디오 변경 시 필터
+document.querySelectorAll('input[name="mode"]').forEach(r => {
+  r.addEventListener("change", renderList);
+});
 
-        list.forEach(row => {
-            const div = document.createElement("div");
-            div.className = "table-row";
-
-            div.innerHTML = `
-                <div class="${hasNewline(row.index) ? 'has-newline' : ''}">${row.index}</div>
-                <div class="iso-cell ${hasNewline(row.iso) ? 'has-newline' : ''}">${row.iso}</div>
-                <div class="${hasNewline(row.joint) ? 'has-newline' : ''}">${row.joint}</div>
-                <div class="${hasNewline(row.wd) ? 'has-newline' : ''}">${row.wd}</div>
-                <div class="${hasNewline(row.date) ? 'has-newline' : ''}">${row.date}</div>
-                <div class="note-cell"></div>
-            `;
-
-            // 클릭 시 선택 행 하이라이트
-            div.addEventListener("click", () => {
-                document.querySelectorAll("#tableBody .table-row")
-                    .forEach(r => r.classList.remove("selected"));
-                div.classList.add("selected");
-            });
-
-            body.appendChild(div);
-        });
-    }
-
-    // 통합 검색
-    document.getElementById("searchInput").addEventListener("input", function () {
-        const q = this.value.trim().toLowerCase();
-
-        if (!q) {
-            renderTable(wirData);
-            return;
-        }
-
-        showLoading(true);
-
-        setTimeout(() => {
-            const filtered = wirData.filter(r => {
-                const line = (
-                    (r.index || "") + " " +
-                    (r.iso   || "") + " " +
-                    (r.joint || "") + " " +
-                    (r.wd    || "") + " " +
-                    (r.date  || "")
-                ).toLowerCase();
-                return line.includes(q);
-            });
-
-            renderTable(filtered);
-            showLoading(false);
-        }, 150);
-    });
-
-    // 초기 데이터 로드
-    loadData();
+// 페이지 로드시 데이터 로딩
+loadData();
 </script>
+
 </body>
 </html>
