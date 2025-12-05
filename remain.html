@@ -340,7 +340,7 @@ function renderList() {
       <td>${row[2]}</td>
     `;
 
-    // 행 선택 하이라이트 + ISO REV 페이지와 동일한 링크 동작
+    // 행 선택 하이라이트 + ISO REV / 완료조인트와 동일한 링크 동작
     tr.addEventListener("click", () => {
       // 선택 표시
       document.querySelectorAll("#resultBody tr.selected-row")
