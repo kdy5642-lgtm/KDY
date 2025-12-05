@@ -129,6 +129,15 @@ tbody tr:hover { background: #eef6ff; }
 /* 선택 하이라이트 */
 tbody tr.selected-row { background: #dbeafe !important; }
 
+/* ISO 링크 스타일 */
+.iso-link {
+  color: #2563eb;
+  text-decoration: underline;
+}
+.iso-link:hover {
+  text-decoration: none;
+}
+
 /* 모바일 */
 @media (max-width: 600px) {
   h1 { font-size: 18px; }
@@ -222,7 +231,7 @@ tbody tr.selected-row { background: #dbeafe !important; }
     </div>
   </div>
 
-  <!-- 테이블 (W/D No, Date 제거됨) -->
+  <!-- 테이블 -->
   <table>
     <thead>
       <tr>
@@ -242,7 +251,9 @@ tbody tr.selected-row { background: #dbeafe !important; }
 
 <script>
 // -------------------------------------------
-// remain.txt → INDEX | ISO | JOINT 만 사용
+// remain.txt → INDEX | ISO | JOINT | (URL)
+//   예시:
+//   3546  S216-30_SB_ISO-3TK-LS-2153-34-001-05  S902  https://....pdf
 // -------------------------------------------
 let rawData = [];
 
@@ -253,7 +264,7 @@ function hideLoadingOverlay() {
   document.getElementById("loadingOverlay").style.display = "none";
 }
 
-// remain.txt 파싱 (앞 3개만 사용)
+// remain.txt 파싱 (앞 3개 + URL 사용)
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
@@ -262,14 +273,16 @@ function parseTextToData(text) {
     const trimmed = line.trim();
     if (!trimmed) continue;
 
+    // 탭/콤마/공백 여러 개를 하나의 구분자로 보고 분리
     let cols = trimmed.split(/[\t, ]+/g);
     if (cols.length < 3) continue;
 
     const c0 = cols[0]; // INDEX
     const c1 = cols[1]; // ISO
     const c2 = cols[2]; // JOINT
+    const url = cols[3] || ""; // URL (있으면 4번째 컬럼)
 
-    const row = [c0, c1, c2];
+    const row = [c0, c1, c2, url];
     row._lc = [c0.toLowerCase(), c1.toLowerCase(), c2.toLowerCase()];
     parsed.push(row);
   }
@@ -324,13 +337,21 @@ function renderList() {
       if (!ok) continue;
     }
 
+    const url = row[3] || "";
+
+    // ISO 셀을 클릭하면 도면 열리도록 링크 처리 (URL 있는 경우만)
+    const isoCellHtml = url
+      ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="iso-link">${row[1]}</a>`
+      : row[1];
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row[0]}</td>
-      <td>${row[1]}</td>
+      <td>${isoCellHtml}</td>
       <td>${row[2]}</td>
     `;
 
+    // 행 선택 하이라이트 (링크와는 별개)
     tr.addEventListener("click", () => {
       document.querySelectorAll("#resultBody tr.selected-row")
               .forEach(el => el.classList.remove("selected-row"));
