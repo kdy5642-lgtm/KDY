@@ -126,17 +126,11 @@ th, td {
 tbody tr:nth-child(odd) { background: #fcfcff; }
 tbody tr:hover { background: #eef6ff; }
 
-/* 선택 하이라이트 */
+/* 행 커서 & 선택 하이라이트 */
+tbody tr {
+  cursor: pointer;
+}
 tbody tr.selected-row { background: #dbeafe !important; }
-
-/* ISO 링크 스타일 */
-.iso-link {
-  color: #2563eb;
-  text-decoration: underline;
-}
-.iso-link:hover {
-  text-decoration: none;
-}
 
 /* 모바일 */
 @media (max-width: 600px) {
@@ -324,7 +318,7 @@ function renderList() {
         const indexVal = lc[0];
         const indexNorm = indexVal.replace(/[-_\s]/g, "");
         ok = indexVal.includes(rawKw) || indexNorm.includes(normKw);
-      } else {
+      } else { // all
         for (let val of lc) {
           const valNorm = val.replace(/[-_\s]/g, "");
           if (val.includes(rawKw) || valNorm.includes(normKw)) {
@@ -339,23 +333,39 @@ function renderList() {
 
     const url = row[3] || "";
 
-    // ISO 셀을 클릭하면 도면 열리도록 링크 처리 (URL 있는 경우만)
-    const isoCellHtml = url
-      ? `<a href="${url}" target="_blank" rel="noopener noreferrer" class="iso-link">${row[1]}</a>`
-      : row[1];
-
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row[0]}</td>
-      <td>${isoCellHtml}</td>
+      <td>${row[1]}</td>
       <td>${row[2]}</td>
     `;
 
-    // 행 선택 하이라이트 (링크와는 별개)
+    // 행 선택 하이라이트 + ISO REV 페이지와 동일한 링크 동작
     tr.addEventListener("click", () => {
+      // 선택 표시
       document.querySelectorAll("#resultBody tr.selected-row")
               .forEach(el => el.classList.remove("selected-row"));
       tr.classList.add("selected-row");
+
+      // 링크 체크
+      if (!url) {
+        alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
+        return;
+      }
+
+      const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`;
+      if (!confirm(msg)) return;
+
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // 모바일 = 현재 탭
+      if (isMobile) {
+        window.location.href = url;
+        return;
+      }
+
+      // PC = 새 탭
+      window.open(url, "_blank", "noopener");
     });
 
     frag.appendChild(tr);
