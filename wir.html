@@ -137,9 +137,12 @@ tbody tr:hover {
   background: #eef6ff;
 }
 
-/* 행 선택 하이라이트 */
+/* 행 선택 하이라이트 & 커서 */
 tbody tr.selected-row {
   background: #dbeafe !important;
+}
+tbody tr {
+  cursor: pointer;
 }
 
 /* 모바일 대응 */
@@ -273,8 +276,9 @@ tbody tr.selected-row {
 
 <script>
 // -------------------------------------------
-// wirdata.txt → 자동 로드할 배열
-// INDEX | ISO | JOINT | W/D No | DATE
+// wirdata.txt 형식 (예시):
+// 0335 S211-10_SB_ISO-3TK-P-2153-01-030-01 02  GW040 250115 https://...pdf
+// → INDEX | ISO | JOINT | W/D No | DATE | URL
 // -------------------------------------------
 let rawData = [];
 
@@ -300,15 +304,17 @@ function parseTextToData(text) {
     if (!trimmed) continue;
 
     let cols = trimmed.split(/[\t, ]+/g);
-    if (cols.length < 5) continue; // 최소 5개 컬럼 필요
+    // INDEX, ISO, JOINT, W/D, DATE, URL → 최소 6개
+    if (cols.length < 5) continue;
 
-    const c0 = cols[0];                 // INDEX
-    const c1 = cols[1];                 // ISO
-    const c2 = cols[2];                 // JOINT
-    const c3 = cols[3];                 // W/D No
-    const c4 = cols.slice(4).join(" "); // DATE (공백 포함 가능)
+    const c0 = cols[0]; // INDEX
+    const c1 = cols[1]; // ISO
+    const c2 = cols[2]; // JOINT
+    const c3 = cols[3]; // W/D No
+    const c4 = cols[4] || ""; // DATE
+    const url = cols.length >= 6 ? cols.slice(5).join(" ") : ""; // URL (있으면 6번째 이후 전부)
 
-    const row = [c0, c1, c2, c3, c4];
+    const row = [c0, c1, c2, c3, c4, url];
 
     row._lc = [
       String(c0).toLowerCase(),
@@ -316,6 +322,7 @@ function parseTextToData(text) {
       String(c2).toLowerCase(),
       String(c3).toLowerCase(),
       String(c4).toLowerCase()
+      // URL은 검색 대상에서 제외
     ];
 
     parsed.push(row);
@@ -346,6 +353,7 @@ async function loadData() {
 // -------------------------------------------
 // 필터 + 렌더링 (INDEX / 통합검색)
 // - 2초 디바운스, -/_/공백 무시
+// - 행 클릭 시: ISO REV 페이지와 동일한 링크 동작
 // -------------------------------------------
 function renderList() {
   const modeEl = document.querySelector('input[name="mode"]:checked');
@@ -373,7 +381,7 @@ function renderList() {
         const indexNorm = indexVal.replace(/[-_\s]/g, "");
         ok = indexVal.includes(rawKw) || indexNorm.includes(normKw);
       } else {
-        // 통합 검색: 모든 컬럼
+        // 통합 검색: (INDEX, ISO, JOINT, W/D, DATE)
         for (let c = 0; c < lc.length; c++) {
           const val = lc[c];
           const valNorm = val.replace(/[-_\s]/g, "");
@@ -396,12 +404,33 @@ function renderList() {
       <td>${row[4]}</td>
     `;
 
-    // 행 클릭 시 선택 하이라이트
+    // 행 클릭 시: 선택 하이라이트 + 링크 오픈 (ISO REV 방식과 동일)
     tr.addEventListener("click", () => {
+      // 선택 표시
       document
         .querySelectorAll("#resultBody tr.selected-row")
         .forEach(el => el.classList.remove("selected-row"));
       tr.classList.add("selected-row");
+
+      const link = row[5] || "";
+      if (!link) {
+        alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
+        return;
+      }
+
+      const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`;
+      if (!confirm(msg)) return;
+
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // 모바일 = 현재 탭
+      if (isMobile) {
+        window.location.href = link;
+        return;
+      }
+
+      // PC = 새 탭
+      window.open(link, "_blank", "noopener");
     });
 
     frag.appendChild(tr);
