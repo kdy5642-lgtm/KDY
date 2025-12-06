@@ -10,7 +10,7 @@
 body {
   margin: 0;
   padding: 0;
-  background: #e9ecef; /* 배경 회색 */
+  background: #e9ecef;
   font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 }
 
@@ -19,10 +19,9 @@ body {
   margin: 20px auto;
   padding: 40px 20px;
   text-align: center;
-
   background: #ffffff;
-  border: 4px solid #1d7df5;        /* 파란 테두리 */
-  border-radius: 12px;               /* 모서리 둥글게 */
+  border: 4px solid #1d7df5;
+  border-radius: 12px;
   box-shadow: 0 4px 12px rgba(0,0,0,0.08);
 }
 
@@ -54,9 +53,32 @@ h1 {
   font-weight: 600;
   box-shadow: 0 2px 6px rgba(0,0,0,0.15);
 }
+.menu-btn:hover { background: #1e4fc9; }
 
-.menu-btn:hover {
-  background: #1e4fc9;
+/* 🔵 로딩 스피너 */
+#loadingSpinner {
+  display: none;
+  margin: 20px auto;
+  border: 6px solid #e0e0e0;
+  border-top: 6px solid #1d7df5;
+  border-radius: 50%;
+  width: 48px;
+  height: 48px;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* 🔵 이미지 */
+#keyplanImg {
+  width: 100%;
+  display: none;
+  margin-top: 20px;
+  border-radius: 10px;
+  border: 2px solid #1d7df5;
 }
 
 </style>
@@ -85,15 +107,14 @@ h1 {
     PIPING SUPPORT 정보
   </a>
 
-  <!-- 🔵 형님 요청 메뉴 추가 완료 -->
-  <a class="menu-btn" href="https://kdy5642.synology.me/keyplan.png">
-    KEY PLAN FILE [좌표입력중]
-  </a>
+  <!-- 🔵 KEYPLAN 로딩 스피너 + 이미지 -->
+  <div id="loadingSpinner"></div>
+  <img id="keyplanImg" src="https://kdy5642.synology.me/keyplan.png" alt="KEY PLAN">
 
 </div>
 
 <script>
-// date.txt 읽어서 화면에 표시
+// 날짜 정보 로드
 async function loadDateInfo() {
   try {
     const res = await fetch("date.txt?_=" + Date.now());
@@ -103,10 +124,28 @@ async function loadDateInfo() {
     document.getElementById("dateInfo").innerText = "적용기준: 불러오기 실패";
   }
 }
-
 loadDateInfo();
+
+// 🔵 KEYPLAN PNG 로딩 처리
+const img = document.getElementById("keyplanImg");
+const spinner = document.getElementById("loadingSpinner");
+
+// 로딩 시작 → 스피너 표시
+spinner.style.display = "block";
+
+// 이미지 로드 완료
+img.onload = function() {
+  spinner.style.display = "none"; // 스피너 숨김
+  img.style.display = "block";    // 이미지 표시
+};
+
+// 이미지 로드 실패 시 메시지 표시
+img.onerror = function() {
+  spinner.style.display = "none";
+  img.style.display = "none";
+  document.getElementById("dateInfo").innerText = "이미지를 불러오지 못했습니다.";
+};
 </script>
 
 </body>
 </html>
-
