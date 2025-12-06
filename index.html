@@ -56,14 +56,22 @@ h1 {
 .menu-btn:hover { background: #1e4fc9; }
 
 /* 🔵 로딩 스피너 */
-#loadingSpinner {
+.loading-overlay {
   display: none;
-  margin: 20px auto;
-  border: 6px solid #e0e0e0;
+  position: fixed;
+  top: 0; left: 0; right: 0; bottom: 0;
+  background: rgba(255,255,255,0.9);
+  z-index: 9999;
+  align-items: center;
+  justify-content: center;
+}
+
+.spinner {
+  border: 6px solid #ccc;
   border-top: 6px solid #1d7df5;
   border-radius: 50%;
-  width: 48px;
-  height: 48px;
+  width: 60px;
+  height: 60px;
   animation: spin 1s linear infinite;
 }
 
@@ -71,16 +79,6 @@ h1 {
   0% { transform: rotate(0deg); }
   100% { transform: rotate(360deg); }
 }
-
-/* 🔵 이미지 */
-#keyplanImg {
-  width: 100%;
-  display: none;
-  margin-top: 20px;
-  border-radius: 10px;
-  border: 2px solid #1d7df5;
-}
-
 </style>
 </head>
 <body>
@@ -107,10 +105,16 @@ h1 {
     PIPING SUPPORT 정보
   </a>
 
-  <!-- 🔵 KEYPLAN 로딩 스피너 + 이미지 -->
-  <div id="loadingSpinner"></div>
-  <img id="keyplanImg" src="https://kdy5642.synology.me/keyplan.png" alt="KEY PLAN">
+  <!-- 🔵 KEY PLAN 버튼 (로딩 적용) -->
+  <a class="menu-btn" id="keyBtn" href="#">
+    KEY PLAN FILE [좌표입력중]
+  </a>
 
+</div>
+
+<!-- 🔵 전체 화면 로딩 오버레이 -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="spinner"></div>
 </div>
 
 <script>
@@ -126,25 +130,18 @@ async function loadDateInfo() {
 }
 loadDateInfo();
 
-// 🔵 KEYPLAN PNG 로딩 처리
-const img = document.getElementById("keyplanImg");
-const spinner = document.getElementById("loadingSpinner");
+// 🔵 KEY PLAN 클릭 시 로딩 스피너 표시 → PNG 로 이동
+document.getElementById("keyBtn").addEventListener("click", function(e) {
+  e.preventDefault();
 
-// 로딩 시작 → 스피너 표시
-spinner.style.display = "block";
+  // 스피너 표시
+  document.getElementById("loadingOverlay").style.display = "flex";
 
-// 이미지 로드 완료
-img.onload = function() {
-  spinner.style.display = "none"; // 스피너 숨김
-  img.style.display = "block";    // 이미지 표시
-};
-
-// 이미지 로드 실패 시 메시지 표시
-img.onerror = function() {
-  spinner.style.display = "none";
-  img.style.display = "none";
-  document.getElementById("dateInfo").innerText = "이미지를 불러오지 못했습니다.";
-};
+  // 200ms 후 이미지 페이지로 이동 (바로 이동하면 스피너가 안 뜸)
+  setTimeout(() => {
+    window.location.href = "https://kdy5642.synology.me/keyplan.png";
+  }, 200);
+});
 </script>
 
 </body>
