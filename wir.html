@@ -1,477 +1,486 @@
-<!DOCTYPE html>
-<html lang="ko">
-<head>
-<meta charset="UTF-8" />
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>대공 PKG3 완료 조인트 현황</title>
-
-<style>
-* { box-sizing: border-box; }
-
-body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-  background: #f0f2f5;
-  margin: 0;
-  padding: 0;
-}
-
-.container {
-  max-width: 980px;
-  margin: 0 auto;
-  background: #ffffff;
-  min-height: 100vh;
-  padding: 12px 14px 40px;
-}
-
-/* 상단 고정 바 */
-.top-bar {
-  position: sticky;
-  top: 0;
-  z-index: 999;
-  background: #ffffff;
-  padding: 10px 8px 12px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
-}
-
-/* 제목 */
-.title-row {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-h1 {
-  margin: 0;
-  font-size: 20px;
-  font-weight: 700;
-}
-.badge-fast {
-  font-size: 11px;
-  padding: 3px 8px;
-  background: #e6f0ff;
-  border: 1px solid #bdd3ff;
-  color: #2755c7;
-  border-radius: 999px;
-  white-space: nowrap;
-}
-
-/* 검색 모드 (INDEX / 통합검색) */
-.search-modes {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 10px 14px;
-  margin: 10px 0 6px;
-}
-
-.search-modes label {
-  font-size: 14px;
-  display: flex;
-  align-items: center;
-  gap: 4px;
-  padding: 4px 10px;
-  border-radius: 999px;
-  background: #f6f7fb;
-  cursor: pointer;
-}
-
-.search-modes input[type="radio"] {
-  accent-color: #2563eb;
-}
-
-/* 검색 입력 */
-.search-box {
-  width: 100%;
-}
-
-.search-input-wrapper {
-  position: relative;
-  width: 100%;
-}
-
-#searchInput {
-  width: 100%;
-  padding: 14px 48px 14px 18px;
-  font-size: 17px;
-  border-radius: 999px;
-  border: 1px solid #ccc;
-  outline: none;
-}
-
-.clear-btn {
-  position: absolute;
-  right: 16px;
-  top: 50%;
-  transform: translateY(-50%);
-  border: none;
-  background: none;
-  font-size: 22px;
-  cursor: pointer;
-  opacity: 0.5;
-}
-.clear-btn:hover {
-  opacity: 0.9;
-}
-
-/* 테이블 */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14px;
-}
-thead {
-  background: #f7f7f9;
-  position: sticky;
-  top: 124px; /* 상단바 + 라디오 + 여백 높이에 맞게 조정 */
-  z-index: 998;
-}
-th, td {
-  padding: 8px 10px;
-  border-bottom: 1px solid #e0e0e0;
-  text-align: center;
-}
-tbody tr:nth-child(odd) {
-  background: #fcfcff;
-}
-tbody tr:hover {
-  background: #eef6ff;
-}
-
-/* 행 선택 하이라이트 & 커서 */
-tbody tr.selected-row {
-  background: #dbeafe !important;
-}
-tbody tr {
-  cursor: pointer;
-}
-
-/* 모바일 대응 */
-@media (max-width: 600px) {
-  h1 { font-size: 18px; }
-  #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; }
-}
-
-/* ★ PC 전용 뒤로가기 버튼 ★*/
-.pc-back-btn {
-  display: none;
-  margin-top: 18px;
-  padding: 12px 18px;
-  background: #2563eb;
-  color: #fff;
-  text-decoration: none;
-  border-radius: 8px;
-  font-size: 15px;
-  font-weight: 600;
-}
-
-/* PC에서만 보이도록 */
-@media (min-width: 801px) {
-  .pc-back-btn {
-    display: inline-block;
-  }
-}
-
-/* 로딩 오버레이 */
-.loading-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(255,255,255,0.8);
-  display: none;
-  align-items: center;
-  justify-content: center;
-  z-index: 2000;
-}
-.loading-inner {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 12px;
-  padding: 20px 24px;
-  background: #ffffff;
-  border-radius: 12px;
-  box-shadow: 0 10px 25px rgba(0,0,0,0.12);
-}
-.spinner {
-  width: 42px;
-  height: 42px;
-  border-radius: 50%;
-  border: 4px solid #e5e7eb;
-  border-top-color: #2563eb;
-  animation: spin 0.8s linear infinite;
-}
-.loading-text {
-  font-size: 14px;
-  color: #374151;
-}
-
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-</style>
-</head>
-
-<body>
-
-<!-- 로딩 오버레이 -->
-<div id="loadingOverlay" class="loading-overlay">
-  <div class="loading-inner">
-    <div class="spinner"></div>
-    <div class="loading-text">데이터를 불러오는 중입니다...</div>
-  </div>
-</div>
-
-<div class="container">
-  
-  <!-- 상단 고정 영역 -->
-  <div class="top-bar">
-    <div class="title-row">
-      <h1>대공 PKG3 완료 조인트 현황</h1>
-      <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
-    </div>
-
-    <!-- 모바일/PC 공용 상단 뒤로가기 버튼 -->
-    <a href="https://kdy5642-lgtm.github.io/KDY/"
-       style="display:inline-block; margin-top:10px; padding:10px 16px;
-              background:#2563eb; color:#fff; text-decoration:none;
-              border-radius:8px; font-size:14px;">
-      ◀ 뒤로가기
-    </a>
-
-    <!-- 검색 모드 선택 (INDEX / 통합검색) -->
-    <div class="search-modes">
-      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
-      <label><input type="radio" name="mode" value="all"><span>통합 검색</span></label>
-    </div>
-
-    <!-- 검색 입력 -->
-    <div class="search-box">
-      <div class="search-input-wrapper">
-        <input id="searchInput" type="text"
-               placeholder="예: 0001, 00701, 02, 251126 등" />
-        <button id="clearBtn" class="clear-btn">×</button>
-      </div>
-    </div>
-  </div>
-
-  <!-- 결과 테이블 -->
-  <table>
-    <thead>
-      <tr>
-        <th style="width:80px;">INDEX</th>
-        <th>ISO 도면번호</th>
-        <th style="width:160px;">Joint</th>
-        <th style="width:140px;">W/D No</th>
-        <th style="width:160px;">Date</th>
-      </tr>
-    </thead>
-    <tbody id="resultBody"></tbody>
-  </table>
-
-  <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ -->
-  <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
-    ◀ 뒤로가기 (PC)
-  </a>
-
-</div>
-
-<script>
-// -------------------------------------------
-// wirdata.txt 형식 (예시):
-// 0335 S211-10_SB_ISO-3TK-P-2153-01-030-01 02  GW040 250115 https://...pdf
-// → INDEX | ISO | JOINT | W/D No | DATE | URL
-// -------------------------------------------
-let rawData = [];
-
-// 로딩 오버레이 제어 함수
-function showLoadingOverlay() {
-  const el = document.getElementById("loadingOverlay");
-  if (el) el.style.display = "flex";
-}
-function hideLoadingOverlay() {
-  const el = document.getElementById("loadingOverlay");
-  if (el) el.style.display = "none";
-}
-
-// -------------------------------------------
-// 텍스트 파싱 (+ 소문자 캐시)
-// -------------------------------------------
-function parseTextToData(text) {
-  const lines = text.trim().split("\n");
-  const parsed = [];
-
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-    if (!trimmed) continue;
-
-    let cols = trimmed.split(/[\t, ]+/g);
-    // INDEX, ISO, JOINT, W/D, DATE, URL → 최소 6개
-    if (cols.length < 5) continue;
-
-    const c0 = cols[0]; // INDEX
-    const c1 = cols[1]; // ISO
-    const c2 = cols[2]; // JOINT
-    const c3 = cols[3]; // W/D No
-    const c4 = cols[4] || ""; // DATE
-    const url = cols.length >= 6 ? cols.slice(5).join(" ") : ""; // URL (있으면 6번째 이후 전부)
-
-    const row = [c0, c1, c2, c3, c4, url];
-
-    row._lc = [
-      String(c0).toLowerCase(),
-      String(c1).toLowerCase(),
-      String(c2).toLowerCase(),
-      String(c3).toLowerCase(),
-      String(c4).toLowerCase()
-      // URL은 검색 대상에서 제외
-    ];
-
-    parsed.push(row);
-  }
-
-  return parsed;
-}
-
-// -------------------------------------------
-// wirdata.txt 로드 + 로딩 오버레이 표시
-// -------------------------------------------
-async function loadData() {
-  showLoadingOverlay();
-
-  try {
-    const res = await fetch("wirdata.txt?_=" + Date.now());
-    const text = await res.text();
-    rawData = parseTextToData(text);
-    renderList();
-  } catch (e) {
-    console.error(e);
-    alert("wirdata.txt 파일을 불러오지 못했습니다.");
-  } finally {
-    hideLoadingOverlay();
-  }
-}
-
-// -------------------------------------------
-// 필터 + 렌더링 (INDEX / 통합검색)
-// - 2초 디바운스, -/_/공백 무시
-// - 행 클릭 시: ISO REV 페이지와 동일한 링크 동작
-// -------------------------------------------
-function renderList() {
-  const modeEl = document.querySelector('input[name="mode"]:checked');
-  const mode = modeEl ? modeEl.value : "all";
-
-  const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
-  const normKw = rawKw.replace(/[-_\s]/g, "");
-  const tbody = document.getElementById("resultBody");
-
-  const hasKeyword = rawKw.length > 0;
-
-  tbody.innerHTML = "";
-  const frag = document.createDocumentFragment();
-
-  for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i];
-    const lc = row._lc;
-
-    if (hasKeyword) {
-      let ok = false;
-
-      if (mode === "index") {
-        // INDEX 컬럼만 검색
-        const indexVal = lc[0];
-        const indexNorm = indexVal.replace(/[-_\s]/g, "");
-        ok = indexVal.includes(rawKw) || indexNorm.includes(normKw);
-      } else {
-        // 통합 검색: (INDEX, ISO, JOINT, W/D, DATE)
-        for (let c = 0; c < lc.length; c++) {
-          const val = lc[c];
-          const valNorm = val.replace(/[-_\s]/g, "");
-          if (val.includes(rawKw) || valNorm.includes(normKw)) {
-            ok = true;
-            break;
-          }
-        }
-      }
-
-      if (!ok) continue;
-    }
-
-    const tr = document.createElement("tr");
-    tr.innerHTML = `
-      <td>${row[0]}</td>
-      <td>${row[1]}</td>
-      <td>${row[2]}</td>
-      <td>${row[3]}</td>
-      <td>${row[4]}</td>
-    `;
-
-    // 행 클릭 시: 선택 하이라이트 + 링크 오픈 (ISO REV 방식과 동일)
-    tr.addEventListener("click", () => {
-      // 선택 표시
-      document
-        .querySelectorAll("#resultBody tr.selected-row")
-        .forEach(el => el.classList.remove("selected-row"));
-      tr.classList.add("selected-row");
-
-      const link = row[5] || "";
-      if (!link) {
-        alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
-        return;
-      }
-
-      const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`;
-      if (!confirm(msg)) return;
-
-      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-      // 모바일 = 현재 탭
-      if (isMobile) {
-        window.location.href = link;
-        return;
-      }
-
-      // PC = 새 탭
-      window.open(link, "_blank", "noopener");
-    });
-
-    frag.appendChild(tr);
-  }
-
-  tbody.appendChild(frag);
-}
-
-// 2초 디바운스
-let filterTimer = null;
-const searchInputEl = document.getElementById("searchInput");
-
-searchInputEl.addEventListener("input", () => {
-  if (filterTimer) clearTimeout(filterTimer);
-  filterTimer = setTimeout(renderList, 2000);
-});
-
-// X 버튼
-document.getElementById("clearBtn").addEventListener("click", () => {
-  searchInputEl.value = "";
-  searchInputEl.focus();
-  renderList();
-});
-
-// 검색 모드 변경 시 재필터
-document.querySelectorAll('input[name="mode"]').forEach(radio => {
-  radio.addEventListener("change", renderList);
-});
-
-// 화면 좌/우 회전 시 로딩 마크 표시 후 재렌더
-window.addEventListener("orientationchange", () => {
-  showLoadingOverlay();
-  setTimeout(() => {
-    renderList();
-    hideLoadingOverlay();
-  }, 500);
-});
-
-// 페이지 로드시 데이터 로딩
-loadData();
-</script>
-
-</body>
+<!DOCTYPE html> 
+<html lang="ko"> 
+<head> 
+<meta charset="UTF-8" /> 
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" /> 
+<title>대공 PKG3 완료 조인트 현황</title> 
+
+<style> 
+* { box-sizing: border-box; } 
+
+body { 
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif; 
+  background: #f0f2f5; 
+  margin: 0; 
+  padding: 0; 
+} 
+
+.container { 
+  max-width: 980px; 
+  margin: 0 auto; 
+  background: #ffffff; 
+  min-height: 100vh; 
+  padding: 12px 14px 40px; 
+} 
+
+/* 상단 고정 바 */ 
+.top-bar { 
+  position: sticky; 
+  top: 0; 
+  z-index: 999; 
+  background: #ffffff; 
+  padding: 10px 8px 12px; 
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08); 
+} 
+
+/* 제목 */ 
+.title-row { 
+  display: flex; 
+  align-items: center; 
+  justify-content: space-between; 
+  flex-wrap: wrap; 
+  gap: 8px; 
+} 
+h1 { 
+  margin: 0; 
+  font-size: 20px; 
+  font-weight: 700; 
+} 
+.badge-fast { 
+  font-size: 11px; 
+  padding: 3px 8px; 
+  background: #e6f0ff; 
+  border: 1px solid #bdd3ff; 
+  color: #2755c7; 
+  border-radius: 999px; 
+  white-space: nowrap; 
+} 
+
+/* 검색 모드 (INDEX / 통합검색) */ 
+.search-modes { 
+  display: flex; 
+  flex-wrap: wrap; 
+  gap: 10px 14px; 
+  margin: 10px 0 6px; 
+} 
+
+.search-modes label { 
+  font-size: 14px; 
+  display: flex; 
+  align-items: center; 
+  gap: 4px; 
+  padding: 4px 10px; 
+  border-radius: 999px; 
+  background: #f6f7fb; 
+  cursor: pointer; 
+} 
+
+.search-modes input[type="radio"] { 
+  accent-color: #2563eb; 
+} 
+
+/* 검색 입력 */ 
+.search-box { 
+  width: 100%; 
+} 
+
+.search-input-wrapper { 
+  position: relative; 
+  width: 100%; 
+} 
+
+#searchInput { 
+  width: 100%; 
+  padding: 14px 48px 14px 18px; 
+  font-size: 17px; 
+  border-radius: 999px; 
+  border: 1px solid #ccc; 
+  outline: none; 
+} 
+
+.clear-btn { 
+  position: absolute; 
+  right: 16px; 
+  top: 50%; 
+  transform: translateY(-50%); 
+  border: none; 
+  background: none; 
+  font-size: 22px; 
+  cursor: pointer; 
+  opacity: 0.5; 
+} 
+.clear-btn:hover { 
+  opacity: 0.9; 
+} 
+
+/* 테이블 */ 
+table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 14px; 
+} 
+thead { 
+  background: #f7f7f9; 
+  position: sticky; 
+  top: 124px; /* 상단바 + 라디오 + 여백 높이에 맞게 조정 */ 
+  z-index: 998; 
+} 
+th, td { 
+  padding: 8px 10px; 
+  border-bottom: 1px solid #e0e0e0; 
+  text-align: center; 
+} 
+tbody tr:nth-child(odd) { 
+  background: #fcfcff; 
+} 
+tbody tr:hover { 
+  background: #eef6ff; 
+} 
+
+/* Date 값 있는 행 하이라이트 */ 
+tbody tr.date-ok { 
+  background: #e4f7e4; 
+} 
+
+/* 행 선택 하이라이트 & 커서 */ 
+tbody tr.selected-row { 
+  background: #dbeafe !important; 
+} 
+tbody tr { 
+  cursor: pointer; 
+} 
+
+/* 모바일 대응 */ 
+@media (max-width: 600px) { 
+  h1 { font-size: 18px; } 
+  #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; } 
+} 
+
+/* ★ PC 전용 뒤로가기 버튼 ★*/ 
+.pc-back-btn { 
+  display: none; 
+  margin-top: 18px; 
+  padding: 12px 18px; 
+  background: #2563eb; 
+  color: #fff; 
+  text-decoration: none; 
+  border-radius: 8px; 
+  font-size: 15px; 
+  font-weight: 600; 
+} 
+
+/* PC에서만 보이도록 */ 
+@media (min-width: 801px) { 
+  .pc-back-btn { 
+    display: inline-block; 
+  } 
+} 
+
+/* 로딩 오버레이 */ 
+.loading-overlay { 
+  position: fixed; 
+  inset: 0; 
+  background: rgba(255,255,255,0.8); 
+  display: none; 
+  align-items: center; 
+  justify-content: center; 
+  z-index: 2000; 
+} 
+.loading-inner { 
+  display: flex; 
+  flex-direction: column; 
+  align-items: center; 
+  gap: 12px; 
+  padding: 20px 24px; 
+  background: #ffffff; 
+  border-radius: 12px; 
+  box-shadow: 0 10px 25px rgba(0,0,0,0.12); 
+} 
+.spinner { 
+  width: 42px; 
+  height: 42px; 
+  border-radius: 50%; 
+  border: 4px solid #e5e7eb; 
+  border-top-color: #2563eb; 
+  animation: spin 0.8s linear infinite; 
+} 
+.loading-text { 
+  font-size: 14px; 
+  color: #374151; 
+} 
+
+@keyframes spin { 
+  to { transform: rotate(360deg); } 
+} 
+</style> 
+</head> 
+
+<body> 
+
+<!-- 로딩 오버레이 --> 
+<div id="loadingOverlay" class="loading-overlay"> 
+  <div class="loading-inner"> 
+    <div class="spinner"></div> 
+    <div class="loading-text">데이터를 불러오는 중입니다...</div> 
+  </div> 
+</div> 
+
+<div class="container"> 
+ 
+  <!-- 상단 고정 영역 --> 
+  <div class="top-bar"> 
+    <div class="title-row"> 
+      <h1>대공 PKG3 완료 조인트 현황</h1> 
+      <div class="badge-fast">현장 태그 / 타입 빠른 검색</div> 
+    </div> 
+ 
+    <!-- 모바일/PC 공용 상단 뒤로가기 버튼 --> 
+    <a href="https://kdy5642-lgtm.github.io/KDY/" 
+       style="display:inline-block; margin-top:10px; padding:10px 16px; 
+              background:#2563eb; color:#fff; text-decoration:none; 
+              border-radius:8px; font-size:14px;"> 
+      ◀ 뒤로가기 
+    </a> 
+ 
+    <!-- 검색 모드 선택 (INDEX / 통합검색) --> 
+    <div class="search-modes"> 
+      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label> 
+      <label><input type="radio" name="mode" value="all"><span>통합 검색</span></label> 
+    </div> 
+ 
+    <!-- 검색 입력 --> 
+    <div class="search-box"> 
+      <div class="search-input-wrapper"> 
+        <input id="searchInput" type="text" 
+               placeholder="예: 0001, 00701, 02, 251126 등" /> 
+        <button id="clearBtn" class="clear-btn">×</button> 
+      </div> 
+    </div> 
+  </div> 
+ 
+  <!-- 결과 테이블 --> 
+  <table> 
+    <thead> 
+      <tr> 
+        <th style="width:80px;">INDEX</th> 
+        <th>ISO 도면번호</th> 
+        <th style="width:160px;">Joint</th> 
+        <th style="width:140px;">W/D No</th> 
+        <th style="width:160px;">Date</th> 
+      </tr> 
+    </thead> 
+    <tbody id="resultBody"></tbody> 
+  </table> 
+ 
+  <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ --> 
+  <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn"> 
+    ◀ 뒤로가기 (PC) 
+  </a> 
+</div> 
+
+<script> 
+// ------------------------------------------- 
+// wir.txt 형식 (예시): 
+// 0335 S211-10_SB_ISO-3TK-P-2153-01-030-01 02  GW040 250115 https://...pdf 
+// → INDEX | ISO | JOINT | W/D No | DATE | URL 
+// ------------------------------------------- 
+let rawData = []; 
+
+// 로딩 오버레이 제어 함수 
+function showLoadingOverlay() { 
+  const el = document.getElementById("loadingOverlay"); 
+  if (el) el.style.display = "flex"; 
+} 
+function hideLoadingOverlay() { 
+  const el = document.getElementById("loadingOverlay"); 
+  if (el) el.style.display = "none"; 
+} 
+
+// ------------------------------------------- 
+// 텍스트 파싱 (+ 소문자 캐시) 
+// ------------------------------------------- 
+function parseTextToData(text) { 
+  const lines = text.trim().split("\n"); 
+  const parsed = []; 
+ 
+  for (let i = 0; i < lines.length; i++) { 
+    const trimmed = lines[i].trim(); 
+    if (!trimmed) continue; 
+ 
+    let cols = trimmed.split(/[\t, ]+/g); 
+    // INDEX, ISO, JOINT, W/D, DATE, URL → 최소 5개 
+    if (cols.length < 5) continue; 
+ 
+    const c0 = cols[0]; // INDEX 
+    const c1 = cols[1]; // ISO 
+    const c2 = cols[2]; // JOINT 
+    const c3 = cols[3]; // W/D No 
+    const c4 = cols[4] || ""; // DATE 
+    const url = cols.length >= 6 ? cols.slice(5).join(" ") : ""; // URL (있으면 6번째 이후 전부) 
+ 
+    const row = [c0, c1, c2, c3, c4, url]; 
+ 
+    row._lc = [ 
+      String(c0).toLowerCase(), 
+      String(c1).toLowerCase(), 
+      String(c2).toLowerCase(), 
+      String(c3).toLowerCase(), 
+      String(c4).toLowerCase() 
+      // URL은 검색 대상에서 제외 
+    ]; 
+ 
+    parsed.push(row); 
+  } 
+ 
+  return parsed; 
+} 
+
+// ------------------------------------------- 
+// wir.txt 로드 + 로딩 오버레이 표시 
+// ------------------------------------------- 
+async function loadData() { 
+  showLoadingOverlay(); 
+ 
+  try { 
+    const res = await fetch("wir.txt?_=" + Date.now()); 
+    const text = await res.text(); 
+    rawData = parseTextToData(text); 
+    renderList(); 
+  } catch (e) { 
+    console.error(e); 
+    alert("wir.txt 파일을 불러오지 못했습니다."); 
+  } finally { 
+    hideLoadingOverlay(); 
+  } 
+} 
+
+// ------------------------------------------- 
+// 필터 + 렌더링 (INDEX / 통합검색) 
+// - 2초 디바운스, -/_/공백 무시 
+// - 행 클릭 시: ISO REV 페이지와 동일한 링크 동작 
+// ------------------------------------------- 
+function renderList() { 
+  const modeEl = document.querySelector('input[name="mode"]:checked'); 
+  const mode = modeEl ? modeEl.value : "all"; 
+ 
+  const rawKw = document.getElementById("searchInput").value.trim().toLowerCase(); 
+  const normKw = rawKw.replace(/[-_\s]/g, ""); 
+  const tbody = document.getElementById("resultBody"); 
+ 
+  const hasKeyword = rawKw.length > 0; 
+ 
+  tbody.innerHTML = ""; 
+  const frag = document.createDocumentFragment(); 
+ 
+  for (let i = 0; i < rawData.length; i++) { 
+    const row = rawData[i]; 
+    const lc = row._lc; 
+ 
+    if (hasKeyword) { 
+      let ok = false; 
+ 
+      if (mode === "index") { 
+        // INDEX 컬럼만 검색 
+        const indexVal = lc[0]; 
+        const indexNorm = indexVal.replace(/[-_\s]/g, ""); 
+        ok = indexVal.includes(rawKw) || indexNorm.includes(normKw); 
+      } else { 
+        // 통합 검색: (INDEX, ISO, JOINT, W/D, DATE) 
+        for (let c = 0; c < lc.length; c++) { 
+          const val = lc[c]; 
+          const valNorm = val.replace(/[-_\s]/g, ""); 
+          if (val.includes(rawKw) || valNorm.includes(normKw)) { 
+            ok = true; 
+            break; 
+          } 
+        } 
+      } 
+ 
+      if (!ok) continue; 
+    } 
+ 
+    const tr = document.createElement("tr"); 
+    tr.innerHTML = ` 
+      <td>${row[0]}</td> 
+      <td>${row[1]}</td> 
+      <td>${row[2]}</td> 
+      <td>${row[3]}</td> 
+      <td>${row[4]}</td> 
+    `; 
+ 
+    // Date 값이 있으면 해당 행을 녹색으로 하이라이트 
+    if (row[4] && String(row[4]).trim() !== "") { 
+      tr.classList.add("date-ok"); 
+    } 
+ 
+    // 행 클릭 시: 선택 하이라이트 + 링크 오픈 (ISO REV 방식과 동일) 
+    tr.addEventListener("click", () => { 
+      // 선택 표시 
+      document 
+        .querySelectorAll("#resultBody tr.selected-row") 
+        .forEach(el => el.classList.remove("selected-row")); 
+      tr.classList.add("selected-row"); 
+ 
+      const link = row[5] || ""; 
+      if (!link) { 
+        alert("이 행에는 도면 링크가 등록되어 있지 않습니다."); 
+        return; 
+      } 
+ 
+      const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`; 
+      if (!confirm(msg)) return; 
+ 
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent); 
+ 
+      // 모바일 = 현재 탭 
+      if (isMobile) { 
+        window.location.href = link; 
+        return; 
+      } 
+ 
+      // PC = 새 탭 
+      window.open(link, "_blank", "noopener"); 
+    }); 
+ 
+    frag.appendChild(tr); 
+  } 
+ 
+  tbody.appendChild(frag); 
+} 
+
+// 2초 디바운스 
+let filterTimer = null; 
+const searchInputEl = document.getElementById("searchInput"); 
+
+searchInputEl.addEventListener("input", () => { 
+  if (filterTimer) clearTimeout(filterTimer); 
+  filterTimer = setTimeout(renderList, 2000); 
+}); 
+
+// X 버튼 
+document.getElementById("clearBtn").addEventListener("click", () => { 
+  searchInputEl.value = ""; 
+  searchInputEl.focus(); 
+  renderList(); 
+}); 
+
+// 검색 모드 변경 시 재필터 
+document.querySelectorAll('input[name="mode"]').forEach(radio => { 
+  radio.addEventListener("change", renderList); 
+}); 
+
+// 화면 좌/우 회전 시 로딩 마크 표시 후 재렌더 
+window.addEventListener("orientationchange", () => { 
+  showLoadingOverlay(); 
+  setTimeout(() => { 
+    renderList(); 
+    hideLoadingOverlay(); 
+  }, 500); 
+}); 
+
+// 페이지 로드시 데이터 로딩 
+loadData(); 
+</script> 
+
+</body> 
 </html>
