@@ -284,12 +284,25 @@ function parseTextToData(text) {
     let cols = trimmed.split(/[\t, ]+/g); 
     if (cols.length < 5) continue; 
 
+    // ★ 여기서 DATE 컬럼 정리: '-', '–', '—' 등은 전부 빈 값으로 처리
+    let dateVal = cols[4] || "";
+    let dateTrim = String(dateVal).trim();
+
+    if (
+      dateTrim === "-" || 
+      dateTrim === "–" || 
+      dateTrim === "—" || 
+      dateTrim === ""
+    ) {
+      dateVal = "";
+    }
+
     const row = [
       cols[0],
       cols[1],
       cols[2],
       cols[3],
-      cols[4] || "",
+      dateVal,  // 정리된 DATE
       cols.length >= 6 ? cols.slice(5).join(" ") : ""
     ];
 
@@ -350,8 +363,8 @@ function renderList() {
       <td>${row[4]}</td>
     `;
 
-    /* ★ 수정된 조건 — DATE가 "-"가 아닐 때만 하이라이트 ★ */
-    if (row[4] && String(row[4]).trim() !== "-" && String(row[4]).trim() !== "") {
+    // ★ 여기서는 "값이 있으면"만 하이라이트 (이미 '-'는 파싱 단계에서 제거됨)
+    if (String(row[4]).trim() !== "") {
       tr.classList.add("date-ok");
     }
 
