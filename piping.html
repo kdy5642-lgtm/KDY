@@ -155,6 +155,47 @@ tbody tr {
     display: inline-block;
   }
 }
+
+/* ---------------------- */
+/* 모바일 전용 레이아웃 조정 */
+/* ---------------------- */
+@media (max-width: 800px) {
+  /* 배지 숨기기 */
+  .badge-fast {
+    display: none;
+  }
+
+  /* 상단바를 flex 컨테이너로 만들어 재배치 */
+  .top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .title-row {
+    width: 100%;
+  }
+
+  .search-modes {
+    width: 100%;
+  }
+
+  /* 검색창 + 뒤로가기 한 줄에 배치 */
+  .search-input-wrapper {
+    order: 3;
+    flex: 1 1 65%;
+  }
+
+  .top-back-btn {
+    order: 4;
+    flex: 0 0 auto;
+    margin-top: 0 !important;   /* 인라인 스타일 덮어쓰기 */
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    align-self: center;
+  }
+}
 </style>
 </head>
 
@@ -168,7 +209,9 @@ tbody tr {
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
+    <!-- 상단 뒤로가기 버튼 -->
     <a href="https://kdy5642-lgtm.github.io/KDY/"
+       class="top-back-btn"
        style="display:inline-block; margin-top:10px; padding:10px 16px;
               background:#2563eb; color:#fff; text-decoration:none;
               border-radius:8px; font-size:14px;">
@@ -273,12 +316,28 @@ function renderList() {
       if (!ok[mode]) return;
     }
 
+    // ------------------------------
+    // 모바일용 DATE 변환 (YYYY-MM-DD → YYMMDD)
+    // ------------------------------
+    const isMobileForDate = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let dateDisplay = row[3];
+
+    if (isMobileForDate) {
+      const parts = row[3].split("-");
+      if (parts.length === 3) {
+        const yy = parts[0].slice(2);
+        const mm = parts[1];
+        const dd = parts[2];
+        dateDisplay = yy + mm + dd;
+      }
+    }
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row[0]}</td>
       <td>${row[1]}</td>
       <td>${row[2]}</td>
-      <td>${row[3]}</td>
+      <td>${dateDisplay}</td>
     `;
 
     // ------------------------------------------
