@@ -245,6 +245,11 @@ tbody tr { cursor: pointer; }
     white-space: nowrap;
     align-self: center;
   }
+
+  /* ★ 모바일에서는 PC 뒤로가기 버튼 완전 숨김 */
+  .pc-back-btn {
+    display: none !important;
+  }
 }
 </style> 
 </head> 
@@ -412,7 +417,7 @@ function renderList() {
     }
 
     tr.addEventListener("click", () => {
-      document.querySelectorAll("#resultBody tr.selected-row`)
+      document.querySelectorAll("#resultBody tr.selected-row")
         .forEach(el => el.classList.remove("selected-row"));
       tr.classList.add("selected-row");
 
