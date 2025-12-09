@@ -208,7 +208,7 @@ tbody tr { cursor: pointer; }
 /* ============================= */
 /*   모바일 전용 레이아웃 조정   */
 /* ============================= */
-@media (max-width: 800px) {
+@media (max-width: 800px), (max-height: 500px) {
   /* 배지 숨기기 */
   .badge-fast {
     display: none;
@@ -412,7 +412,7 @@ function renderList() {
     }
 
     tr.addEventListener("click", () => {
-      document.querySelectorAll("#resultBody tr.selected-row")
+      document.querySelectorAll("#resultBody tr.selected-row`)
         .forEach(el => el.classList.remove("selected-row"));
       tr.classList.add("selected-row");
 
