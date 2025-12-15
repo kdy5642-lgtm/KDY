@@ -452,4 +452,20 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   renderList();
 });
 
-/* ✅ 라디오 버튼 변경 시 로딩 오버레이*
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener("change", renderList);
+});
+
+window.addEventListener("orientationchange", () => {
+  showLoadingOverlay();
+  setTimeout(() => {
+    renderList();
+    hideLoadingOverlay();
+  }, 500);
+});
+
+loadData();
+</script>
+
+</body>
+</html>
