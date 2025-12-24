@@ -1,0 +1,398 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>대공 PKG3 ISO REVISION History</title>
+
+<style>
+* { box-sizing: border-box; }
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: #f0f2f5;
+  margin: 0;
+  padding: 0;
+}
+
+.container {
+  max-width: 980px;
+  margin: 0 auto;
+  background: #ffffff;
+  min-height: 100vh;
+  padding: 12px 14px 40px;
+}
+
+/* 상단 고정 바 */
+.top-bar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #ffffff;
+  padding: 10px 8px 12px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+}
+
+/* 제목 */
+.title-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+h1 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 700;
+}
+.badge-fast {
+  font-size: 11px;
+  padding: 3px 8px;
+  background: #e6f0ff;
+  border: 1px solid #bdd3ff;
+  color: #2755c7;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
+/* 라디오 버튼 */
+.search-modes {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px 14px;
+  margin: 10px 0 8px;
+}
+
+.search-modes label {
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  background: #f6f7fb;
+  cursor: pointer;
+}
+
+.search-modes input[type="radio"] {
+  accent-color: #2563eb;
+}
+
+/* 검색 입력 */
+.search-input-wrapper {
+  position: relative;
+  width: 100%;
+}
+
+#searchInput {
+  width: 100%;
+  padding: 14px 48px 14px 18px;
+  font-size: 17px;
+  border-radius: 999px;
+  border: 1px solid #ccc;
+  outline: none;
+}
+
+.clear-btn {
+  position: absolute;
+  right: 16px;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: none;
+  font-size: 22px;
+  cursor: pointer;
+  opacity: 0.5;
+}
+.clear-btn:hover {
+  opacity: 0.9;
+}
+
+/* 테이블 */
+table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+thead {
+  background: #f7f7f9;
+  position: sticky;
+  top: 108px;
+  z-index: 998;
+}
+th, td {
+  padding: 8px 10px;
+  border-bottom: 1px solid #e0e0e0;
+  text-align: center;
+}
+tbody tr:nth-child(odd) {
+  background: #fcfcff;
+}
+tbody tr:hover {
+  background: #eef6ff;
+}
+
+/* 행 커서 */
+tbody tr {
+  cursor: pointer;
+}
+
+/* PC 전용 뒤로가기 */
+.pc-back-btn {
+  display: none;
+  margin-top: 18px;
+  padding: 12px 18px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+@media (min-width: 801px) {
+  .pc-back-btn {
+    display: inline-block;
+  }
+}
+
+/* ---------------------- */
+/* 모바일 전용 레이아웃 조정 */
+/* ---------------------- */
+@media (max-width: 800px), (max-height: 500px) {
+  /* 배지 숨기기 */
+  .badge-fast {
+    display: none;
+  }
+
+  /* 상단바를 flex 컨테이너로 만들어 재배치 */
+  .top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .title-row {
+    width: 100%;
+  }
+
+  .search-modes {
+    width: 100%;
+  }
+
+  /* 검색창 + 뒤로가기 한 줄에 배치 */
+  .search-input-wrapper {
+    order: 3;
+    flex: 1 1 65%;
+  }
+
+  .top-back-btn {
+    order: 4;
+    flex: 0 0 auto;
+    margin-top: 0 !important;   /* 인라인 스타일 덮어쓰기 */
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  /* ★ 모바일에서는 PC 뒤로가기 버튼 완전 숨김 */
+  .pc-back-btn {
+    display: none !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<div class="container">
+  
+  <!-- 상단 고정 영역 -->
+  <div class="top-bar">
+    <div class="title-row">
+      <h1>대공 PKG3 ISO DWG REVISION History</h1>
+      <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
+    </div>
+
+    <!-- 상단 뒤로가기 버튼 -->
+    <a href="https://kdy5642-lgtm.github.io/KDY/"
+       class="top-back-btn"
+       style="display:inline-block; margin-top:10px; padding:10px 16px;
+              background:#2563eb; color:#fff; text-decoration:none;
+              border-radius:8px; font-size:14px;">
+      ◀ 뒤로가기
+    </a>
+
+    <div class="search-modes">
+      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
+      <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
+      <!-- REV 검색 버튼 제거됨 -->
+      <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
+    </div>
+
+    <div class="search-input-wrapper">
+      <input id="searchInput" type="text" placeholder="예: 0001, 00701, 2A, 251126 등" />
+      <button id="clearBtn" class="clear-btn">×</button>
+    </div>
+  </div>
+
+  <!-- 테이블 -->
+  <table>
+    <thead>
+      <tr>
+        <th style="width:80px;">INDEX</th>
+        <th>ISO 도면번호</th>
+        <th style="width:160px;">Rev</th>
+        <th style="width:160px;">Date</th>
+      </tr>
+    </thead>
+    <tbody id="resultBody"></tbody>
+  </table>
+
+  <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
+    ◀ 뒤로가기 (PC)
+  </a>
+
+</div>
+
+<script>
+// ------------------------------------------
+// TXT 파싱 (앞 4개 split + 나머지 전체 링크 처리)
+// ------------------------------------------
+function parseTextToData(text) {
+  const lines = text.trim().split("\n");
+  const parsed = [];
+
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
+
+    const parts = line.split(/[\t ]+/g);
+    const first4 = parts.slice(0, 4);
+    const link = line.substring(first4.join(" ").length).trim();
+
+    const [c0, c1, c2, c3] = first4;
+    const c4 = link;
+
+    const row = [c0, c1, c2, c3, c4];
+    row._lc = [
+      c0.toLowerCase(),
+      c1.toLowerCase(),
+      c2.toLowerCase(),
+      c3.toLowerCase()
+    ];
+
+    parsed.push(row);
+  }
+  return parsed;
+}
+
+// ------------------------------------------
+let rawData = [];
+async function loadData() {
+  const res = await fetch("rev.txt?_=" + Date.now());
+  const text = await res.text();
+  rawData = parseTextToData(text);
+  renderList();
+}
+
+// ------------------------------------------
+function renderList() {
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const kwRaw = document.getElementById("searchInput").value.trim().toLowerCase();
+  const kwNorm = kwRaw.replace(/[-_\s]/g, "");
+  const tbody = document.getElementById("resultBody");
+  const hasKw = kwRaw.length > 0;
+
+  tbody.innerHTML = "";
+  const frag = document.createDocumentFragment();
+
+  rawData.forEach(row => {
+    const lc = row._lc;
+
+    if (hasKw) {
+      const [index, iso, rev, date] = lc;
+      const ok = {
+        index: index.includes(kwRaw) || index.replace(/[-_\s]/g, "").includes(kwNorm),
+        iso:   iso.includes(kwRaw)   || iso.replace(/[-_\s]/g, "").includes(kwNorm),
+        Rev:   rev.includes(kwRaw)   || rev.replace(/[-_\s]/g, "").includes(kwNorm),
+        Date:  date.includes(kwRaw)  || date.replace(/[-_\s]/g, "").includes(kwNorm)
+      };
+      if (!ok[mode]) return;
+    }
+
+    // ------------------------------
+    // 모바일용 DATE 변환 (YYYY-MM-DD → YYMMDD)
+    // ------------------------------
+    const isMobileForDate = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+    let dateDisplay = row[3];
+
+    if (isMobileForDate) {
+      const parts = row[3].split("-");
+      if (parts.length === 3) {
+        const yy = parts[0].slice(2);
+        const mm = parts[1];
+        const dd = parts[2];
+        dateDisplay = yy + mm + dd;
+      }
+    }
+
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${row[0]}</td>
+      <td>${row[1]}</td>
+      <td>${row[2]}</td>
+      <td>${dateDisplay}</td>
+    `;
+
+    // ------------------------------------------
+    // ★ PC → 새창 / 모바일 → 현재 탭 열기
+    // ------------------------------------------
+    tr.addEventListener("click", () => {
+      const link = row[4];
+      if (!link) {
+        alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
+        return;
+      }
+
+      const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`;
+      if (!confirm(msg)) return;
+
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      // 모바일 = 현재 탭
+      if (isMobile) {
+        window.location.href = link;
+        return;
+      }
+
+      // PC = 새탭
+      window.open(link, "_blank", "noopener");
+    });
+
+    frag.appendChild(tr);
+  });
+
+  tbody.appendChild(frag);
+}
+
+// ------------------------------------------
+let timer = null;
+document.getElementById("searchInput").addEventListener("input", () => {
+  if (timer) clearTimeout(timer);
+  timer = setTimeout(renderList, 2000);
+});
+
+document.getElementById("clearBtn").addEventListener("click", () => {
+  document.getElementById("searchInput").value = "";
+  renderList();
+});
+
+document.querySelectorAll('input[name="mode"]').forEach(r =>
+  r.addEventListener("change", renderList)
+);
+
+loadData();
+</script>
+</body>
+</html>
