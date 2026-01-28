@@ -311,12 +311,13 @@ function renderList() {
     const lc = row._lc;
 
     if (hasKw) {
-      const [index, iso, rev, date] = lc;
+      // ★ 변경: Date(=BARCODE 검색) 모드가 Location(row[3])이 아니라 Barcode(row[2])를 검색하도록 수정
+      const [index, iso, barcode, location] = lc;
       const ok = {
         index: index.includes(kwRaw) || index.replace(/[-_\s]/g, "").includes(kwNorm),
         iso:   iso.includes(kwRaw)   || iso.replace(/[-_\s]/g, "").includes(kwNorm),
-        Rev:   rev.includes(kwRaw)   || rev.replace(/[-_\s]/g, "").includes(kwNorm),
-        Date:  date.includes(kwRaw)  || date.replace(/[-_\s]/g, "").includes(kwNorm)
+        Rev:   barcode.includes(kwRaw) || barcode.replace(/[-_\s]/g, "").includes(kwNorm),
+        Date:  barcode.includes(kwRaw) || barcode.replace(/[-_\s]/g, "").includes(kwNorm)
       };
       if (!ok[mode]) return;
     }
@@ -396,4 +397,3 @@ loadData();
 </script>
 </body>
 </html>
-
