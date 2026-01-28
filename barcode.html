@@ -236,9 +236,9 @@ tbody tr.loc-green td:last-child {
 
     <div class="search-modes">
       <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
-      <label><input type="radio" name="mode" value="iso"><span>SPOOL No. 검색</span></label>
+      <label><input type="radio" name="mode" value="spool no."><span>SPOOL No. 검색</span></label>
       <!-- REV 검색 버튼 제거됨 -->
-      <label><input type="radio" name="mode" value="Date"><span>BARCODE 검색</span></label>
+      <label><input type="radio" name="mode" value="barcode"><span>BARCODE 검색</span></label>
     </div>
 
     <div class="search-input-wrapper">
@@ -327,6 +327,10 @@ function renderList() {
       const ok = {
         index: index.includes(kwRaw) || index.replace(/[-_\s]/g, "").includes(kwNorm),
         iso:   iso.includes(kwRaw)   || iso.replace(/[-_\s]/g, "").includes(kwNorm),
+
+        // ✅ 추가: SPOOL No. 검색 = 두번째 값(iso) 검색
+        "spool no.": iso.includes(kwRaw) || iso.replace(/[-_\s]/g, "").includes(kwNorm),
+
         Rev:   barcode.includes(kwRaw) || barcode.replace(/[-_\s]/g, "").includes(kwNorm),
         Date:  barcode.includes(kwRaw) || barcode.replace(/[-_\s]/g, "").includes(kwNorm)
       };
