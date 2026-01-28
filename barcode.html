@@ -138,6 +138,17 @@ tbody tr {
   cursor: pointer;
 }
 
+/* ✅ location 강조(Arrival/Install) */
+tbody tr.loc-green {
+  background: #eaffea !important;
+}
+tbody tr.loc-green:hover {
+  background: #d7ffd7 !important;
+}
+tbody tr.loc-green td:last-child {
+  font-weight: 700;
+}
+
 /* PC 전용 뒤로가기 */
 .pc-back-btn {
   display: none;
@@ -311,7 +322,7 @@ function renderList() {
     const lc = row._lc;
 
     if (hasKw) {
-      // ★ 변경: Date(=BARCODE 검색) 모드가 Location(row[3])이 아니라 Barcode(row[2])를 검색하도록 수정
+      // ★ Date(=BARCODE 검색) 모드가 Location(row[3])이 아니라 Barcode(row[2])를 검색하도록 수정
       const [index, iso, barcode, location] = lc;
       const ok = {
         index: index.includes(kwRaw) || index.replace(/[-_\s]/g, "").includes(kwNorm),
@@ -345,6 +356,12 @@ function renderList() {
       <td>${row[2]}</td>
       <td>${dateDisplay}</td>
     `;
+
+    // ✅ Location 값이 arrival 또는 install 이면 녹색 강조
+    const locVal = (row[3] || "").trim().toLowerCase();
+    if (locVal === "arrival" || locVal === "install") {
+      tr.classList.add("loc-green");
+    }
 
     // ------------------------------------------
     // ★ PC → 새창 / 모바일 → 현재 탭 열기
