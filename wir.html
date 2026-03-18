@@ -142,6 +142,11 @@ tbody tr.date-ok {
   background: #e4f7e4 !important; 
 } 
 
+/* Date 값이 CREDIT이면 핑크 강조 */
+tbody tr.date-credit {
+  background: #ffe4ef !important;
+}
+
 /* 행 선택 하이라이트 */ 
 tbody tr.selected-row { 
   background: #dbeafe !important; 
@@ -332,7 +337,7 @@ function parseTextToData(text) {
     let cols = trimmed.split(/[\t, ]+/g); 
     if (cols.length < 5) continue; 
 
-    // ★ 여기서 DATE 컬럼 정리: '-', '–', '—' 등은 전부 빈 값으로 처리
+    // DATE 컬럼 정리: '-', '–', '—' 등은 전부 빈 값으로 처리
     let dateVal = cols[4] || "";
     let dateTrim = String(dateVal).trim();
 
@@ -350,7 +355,7 @@ function parseTextToData(text) {
       cols[1],
       cols[2],
       cols[3],
-      dateVal,  // 정리된 DATE
+      dateVal,
       cols.length >= 6 ? cols.slice(5).join(" ") : ""
     ];
 
@@ -411,8 +416,12 @@ function renderList() {
       <td>${row[4]}</td>
     `;
 
-    // ★ 여기서는 "값이 있으면"만 하이라이트 (이미 '-'는 파싱 단계에서 제거됨)
-    if (String(row[4]).trim() !== "") {
+    // CREDIT이면 핑크, 그 외 값 있으면 기존 초록 하이라이트
+    const dateText = String(row[4]).trim().toUpperCase();
+
+    if (dateText === "CREDIT") {
+      tr.classList.add("date-credit");
+    } else if (dateText !== "") {
       tr.classList.add("date-ok");
     }
 
