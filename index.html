@@ -110,9 +110,12 @@ h1 {
     KEY PLAN FILE [좌표입력]
   </a>
 
-  <!-- 🔵 새 버튼 추가 -->
   <a class="menu-btn" href="barcode.html">
     스풀 위치 확인
+  </a>
+
+  <a class="menu-btn" href="supt.html">
+    PKG BY SUPT
   </a>
 
 </div>
@@ -142,7 +145,7 @@ document.getElementById("keyBtn").addEventListener("click", function(e) {
   // 스피너 표시
   document.getElementById("loadingOverlay").style.display = "flex";
 
-  // 200ms 후 이미지 페이지로 이동 (바로 이동하면 스피너가 안 뜸)
+  // 200ms 후 이미지 페이지로 이동
   setTimeout(() => {
     window.location.href = "https://kdy5642.synology.me/keyplan.png";
   }, 200);
