@@ -80,10 +80,6 @@ h1 {
 }
 
 /* 검색 입력 */
-.search-box {
-  width: 100%;
-}
-
 .search-input-wrapper {
   position: relative;
   width: 100%;
@@ -136,14 +132,11 @@ tbody tr:nth-child(odd) {
 tbody tr:hover {
   background: #eef6ff;
 }
-
-/* 모바일 대응 */
-@media (max-width: 600px) {
-  h1 { font-size: 18px; }
-  #searchInput { font-size: 18px; padding: 16px 48px 16px 18px; }
+tbody tr {
+  cursor: pointer;
 }
 
-/* ★ PC 전용 뒤로가기 버튼 ★*/
+/* PC 전용 뒤로가기 */
 .pc-back-btn {
   display: none;
   margin-top: 18px;
@@ -155,11 +148,49 @@ tbody tr:hover {
   font-size: 15px;
   font-weight: 600;
 }
-
-/* PC에서만 보이도록 */
 @media (min-width: 801px) {
   .pc-back-btn {
     display: inline-block;
+  }
+}
+
+/* 모바일 전용 */
+@media (max-width: 800px), (max-height: 500px) {
+  .badge-fast {
+    display: none;
+  }
+
+  .top-bar {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .title-row {
+    width: 100%;
+  }
+
+  .search-modes {
+    width: 100%;
+  }
+
+  .search-input-wrapper {
+    order: 3;
+    flex: 1 1 65%;
+  }
+
+  .top-back-btn {
+    order: 4;
+    flex: 0 0 auto;
+    margin-top: 0 !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  .pc-back-btn {
+    display: none !important;
   }
 }
 </style>
@@ -167,54 +198,42 @@ tbody tr:hover {
 
 <body>
 <div class="container">
-  
-  <!-- 상단 고정 영역 -->
+
   <div class="top-bar">
     <div class="title-row">
       <h1>대공 PKG3 SUPT 조회</h1>
-      <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
+      <div class="badge-fast">PKG No / Assembly 빠른 검색</div>
     </div>
 
-    <!-- 모바일/PC 공용 상단 뒤로가기 버튼 -->
     <a href="https://kdy5642-lgtm.github.io/KDY/"
+       class="top-back-btn"
        style="display:inline-block; margin-top:10px; padding:10px 16px;
               background:#2563eb; color:#fff; text-decoration:none;
               border-radius:8px; font-size:14px;">
       ◀ 뒤로가기
     </a>
 
-    <!-- 라디오 선택 -->
     <div class="search-modes">
-      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
-      <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
-      <label><input type="radio" name="mode" value="tag"><span>TAG 검색</span></label>
-      <label><input type="radio" name="mode" value="type"><span>TYPE 검색</span></label>
+      <label><input type="radio" name="mode" value="pkg" checked><span>PKG No 검색</span></label>
+      <label><input type="radio" name="mode" value="assembly"><span>Assembly 검색</span></label>
     </div>
 
-    <!-- 검색입력 -->
-    <div class="search-box">
-      <div class="search-input-wrapper">
-        <input id="searchInput" type="text"
-               placeholder="예: 0001, 00701, TRP014, DSPS18 등" />
-        <button id="clearBtn" class="clear-btn">×</button>
-      </div>
+    <div class="search-input-wrapper">
+      <input id="searchInput" type="text" placeholder="예: DK3-AG-21-52-01-P-0001-KC 또는 2152-SS-005" />
+      <button id="clearBtn" class="clear-btn">×</button>
     </div>
   </div>
 
-  <!-- 결과 테이블 -->
   <table>
     <thead>
       <tr>
-        <th style="width:80px;">INDEX</th>
-        <th>ISO 도면번호</th>
-        <th style="width:160px;">TAG</th>
-        <th style="width:160px;">TYPE</th>
+        <th style="width:320px;">PKG No</th>
+        <th>SUPT Assembly</th>
       </tr>
     </thead>
     <tbody id="resultBody"></tbody>
   </table>
 
-  <!-- ★ PC 전용 뒤로가기 버튼 (페이지 하단) ★ -->
   <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
     ◀ 뒤로가기 (PC)
   </a>
@@ -222,37 +241,26 @@ tbody tr:hover {
 </div>
 
 <script>
-// -------------------------------------------
-// suptdata.txt → 자동 로드할 배열
-// -------------------------------------------
-let rawData = [];
-
-// -------------------------------------------
-// 텍스트 파싱 (+ 소문자 캐시)
-// -------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
 
-  for (let i = 0; i < lines.length; i++) {
-    const trimmed = lines[i].trim();
-    if (!trimmed) continue;
+  for (let line of lines) {
+    line = line.trim();
+    if (!line) continue;
 
-    let cols = trimmed.split(/[\t, ]+/g);
-    if (cols.length < 4) continue;
+    const parts = line.split(/\t+/);
 
-    const c0 = cols[0];
-    const c1 = cols[1];
-    const c2 = cols[2];
-    const c3 = cols.slice(3).join(" ");
+    if (parts.length < 3) continue;
 
-    const row = [c0, c1, c2, c3];
+    const pkgNo = parts[0].trim();
+    const assembly = parts[1].trim();
+    const link = parts[2].trim();
 
+    const row = [pkgNo, assembly, link];
     row._lc = [
-      String(c0).toLowerCase(),
-      String(c1).toLowerCase(),
-      String(c2).toLowerCase(),
-      String(c3).toLowerCase()
+      pkgNo.toLowerCase(),
+      assembly.toLowerCase()
     ];
 
     parsed.push(row);
@@ -261,100 +269,84 @@ function parseTextToData(text) {
   return parsed;
 }
 
-// -------------------------------------------
-// suptdata.txt 로드
-// -------------------------------------------
+let rawData = [];
+
 async function loadData() {
-  try {
-    const res = await fetch("suptdata.txt?_=" + Date.now());
-    const text = await res.text();
-    rawData = parseTextToData(text);
-    renderList();
-  } catch (e) {
-    console.error(e);
-    alert("suptdata.txt 파일을 불러오지 못했습니다.");
-  }
+  const res = await fetch("supt.txt?_=" + Date.now());
+  const text = await res.text();
+  rawData = parseTextToData(text);
+  renderList();
 }
 
-// -------------------------------------------
-// 필터 + 렌더링 (2초 디바운스, -/_/공백 무시)
-// -------------------------------------------
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
-  const rawKw = document.getElementById("searchInput").value.trim().toLowerCase();
-  const normKw = rawKw.replace(/[-_\s]/g, "");
+  const kwRaw = document.getElementById("searchInput").value.trim().toLowerCase();
+  const kwNorm = kwRaw.replace(/[-_\s]/g, "");
   const tbody = document.getElementById("resultBody");
-
-  const hasKeyword = rawKw.length > 0;
+  const hasKw = kwRaw.length > 0;
 
   tbody.innerHTML = "";
   const frag = document.createDocumentFragment();
 
-  for (let i = 0; i < rawData.length; i++) {
-    const row = rawData[i];
-    const lc = row._lc;
+  rawData.forEach(row => {
+    const [pkg, assembly] = row._lc;
 
-    if (hasKeyword) {
-      const index = lc[0];
-      const iso   = lc[1];
-      const tag   = lc[2];
-      const type  = lc[3];
+    if (hasKw) {
+      const ok = {
+        pkg: pkg.includes(kwRaw) || pkg.replace(/[-_\s]/g, "").includes(kwNorm),
+        assembly: assembly.includes(kwRaw) || assembly.replace(/[-_\s]/g, "").includes(kwNorm)
+      };
 
-      const indexNorm = index.replace(/[-_\s]/g, "");
-      const isoNorm   = iso.replace(/[-_\s]/g, "");
-      const tagNorm   = tag.replace(/[-_\s]/g, "");
-      const typeNorm  = type.replace(/[-_\s]/g, "");
-
-      let ok = false;
-      if (mode === "index")
-        ok = index.includes(rawKw) || indexNorm.includes(normKw);
-      else if (mode === "iso")
-        ok = iso.includes(rawKw) || isoNorm.includes(normKw);
-      else if (mode === "tag")
-        ok = tag.includes(rawKw) || tagNorm.includes(normKw);
-      else if (mode === "type")
-        ok = type.includes(rawKw) || typeNorm.includes(normKw);
-
-      if (!ok) continue;
+      if (!ok[mode]) return;
     }
 
     const tr = document.createElement("tr");
     tr.innerHTML = `
       <td>${row[0]}</td>
       <td>${row[1]}</td>
-      <td>${row[2]}</td>
-      <td>${row[3]}</td>
     `;
+
+    tr.addEventListener("click", () => {
+      const link = row[2];
+      if (!link) {
+        alert("이 행에는 링크가 등록되어 있지 않습니다.");
+        return;
+      }
+
+      const msg = `아래 Assembly를 여시겠습니까?\n\n${row[1]}`;
+      if (!confirm(msg)) return;
+
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        window.location.href = link;
+      } else {
+        window.open(link, "_blank", "noopener");
+      }
+    });
+
     frag.appendChild(tr);
-  }
+  });
 
   tbody.appendChild(frag);
 }
 
-// 2초 디바운스
-let filterTimer = null;
-const searchInputEl = document.getElementById("searchInput");
-
-searchInputEl.addEventListener("input", () => {
-  if (filterTimer) clearTimeout(filterTimer);
-  filterTimer = setTimeout(renderList, 2000);
+let timer = null;
+document.getElementById("searchInput").addEventListener("input", () => {
+  if (timer) clearTimeout(timer);
+  timer = setTimeout(renderList, 300);
 });
 
-// X 버튼
 document.getElementById("clearBtn").addEventListener("click", () => {
-  searchInputEl.value = "";
-  searchInputEl.focus();
+  document.getElementById("searchInput").value = "";
   renderList();
 });
 
-// 라디오 변경 시 필터
-document.querySelectorAll('input[name="mode"]').forEach(r => {
-  r.addEventListener("change", renderList);
-});
+document.querySelectorAll('input[name="mode"]').forEach(r =>
+  r.addEventListener("change", renderList)
+);
 
-// 페이지 로드시 데이터 로딩
 loadData();
 </script>
-
 </body>
 </html>
