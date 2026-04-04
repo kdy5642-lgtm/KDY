@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>대공 PKG BY SUPT 조회</title>
+<title>대공 PKG3 SUPT 조회</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -169,17 +169,6 @@ h1 {
   font-weight: 600;
 }
 
-.notice-box {
-  margin: 8px 0 0;
-  padding: 10px 12px;
-  background: #f8fafc;
-  border: 1px solid #dbeafe;
-  color: #334155;
-  border-radius: 10px;
-  font-size: 12px;
-  line-height: 1.5;
-}
-
 /* 테이블 */
 table {
   width: 100%;
@@ -190,7 +179,7 @@ table {
 thead {
   background: #f7f7f9;
   position: sticky;
-  top: 218px;
+  top: 160px;
   z-index: 998;
 }
 
@@ -311,7 +300,7 @@ tbody tr.selected-row {
   }
 
   thead {
-    top: 325px;
+    top: 265px;
   }
 }
 </style>
@@ -345,8 +334,8 @@ tbody tr.selected-row {
     </div>
 
     <div class="action-bar">
-      <button id="bulkOpenBtn" class="action-btn btn-green" type="button">📂 검색결과 전체 열기</button>
-      <button id="selectedOpenBtn" class="action-btn btn-blue" type="button">✅ 선택 항목만 열기</button>
+      <button id="bulkPrintBtn" class="action-btn btn-green" type="button">🖨️ 검색결과 전체 출력</button>
+      <button id="selectedPrintBtn" class="action-btn btn-blue" type="button">✅ 선택 항목만 출력</button>
       <button id="selectAllBtn" class="action-btn btn-gray" type="button">전체선택</button>
       <button id="clearSelectBtn" class="action-btn btn-gray" type="button">선택해제</button>
     </div>
@@ -354,11 +343,6 @@ tbody tr.selected-row {
     <div class="info-text">
       <span class="info-badge" id="resultInfo">검색 결과 0건</span>
       <span class="info-badge" id="selectedInfo">선택 0건</span>
-    </div>
-
-    <div class="notice-box">
-      여러 PDF를 한꺼번에 열 때 브라우저 팝업 차단이 걸릴 수 있습니다.<br>
-      처음 실행 시 팝업 허용을 해주시면 더 안정적으로 열립니다.
     </div>
   </div>
 
@@ -444,10 +428,10 @@ function updateInfo() {
     if (selectedKeys.has(row._key)) selectedCountInView++;
   });
 
-  document.getElementById("selectedInfo").textContent = `선택 ${selectedKeys.size}건`;
+  const totalSelected = selectedKeys.size;
+  document.getElementById("selectedInfo").textContent = `선택 ${totalSelected}건`;
 
   const checkAll = document.getElementById("checkAll");
-
   if (!filteredData.length) {
     checkAll.checked = false;
     checkAll.indeterminate = false;
@@ -529,12 +513,15 @@ function renderList() {
         return;
       }
 
-      const msg = `아래 Assembly를 새 탭으로 여시겠습니까?\n\n${row[1]}`;
+      const msg = `아래 Assembly를 여시겠습니까?\n\n${row[1]}`;
       if (!confirm(msg)) return;
 
-      const opened = window.open(link, "_blank", "noopener");
-      if (!opened) {
-        alert("팝업이 차단되었습니다. 브라우저 팝업 허용 후 다시 시도해주세요.");
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+
+      if (isMobile) {
+        window.location.href = link;
+      } else {
+        window.open(link, "_blank", "noopener");
       }
     });
 
@@ -556,15 +543,14 @@ function getRowsBySelectedKeys() {
   return rawData.filter(row => selectedKeys.has(row._key));
 }
 
-function dedupeRowsByLink(rows) {
+function openBulkPrintWindow(rows, titleText) {
   const uniqueMap = new Map();
 
   rows.forEach(row => {
     const pkg = row[0];
     const assembly = row[1];
     const link = row[2];
-
-    if (!link || !link.trim()) return;
+    if (!link) return;
 
     const key = link.trim().toLowerCase();
     if (!uniqueMap.has(key)) {
@@ -572,75 +558,205 @@ function dedupeRowsByLink(rows) {
     }
   });
 
-  return Array.from(uniqueMap.values());
-}
+  const links = Array.from(uniqueMap.values());
 
-function openLinksSequentially(items) {
-  if (!items.length) {
-    alert("열 수 있는 PDF 링크가 없습니다.");
+  if (!links.length) {
+    alert("출력할 PDF 링크가 없습니다.");
     return;
   }
 
-  const total = items.length;
-  const first = items[0];
-
-  const firstWin = window.open(first.link, "_blank", "noopener");
-  if (!firstWin) {
-    alert("팝업이 차단되었습니다. 브라우저에서 이 사이트의 팝업을 허용한 뒤 다시 시도해주세요.");
+  const newWin = window.open("", "_blank");
+  if (!newWin) {
+    alert("팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.");
     return;
   }
 
-  let blockedCount = 0;
+  const blocks = links.map((item, idx) => {
+    const safePkg = escapeHtml(item.pkg);
+    const safeAssembly = escapeHtml(item.assembly);
+    const safeLink = escapeHtml(item.link);
 
-  for (let i = 1; i < items.length; i++) {
-    setTimeout(() => {
-      const win = window.open(items[i].link, "_blank", "noopener");
-      if (!win) blockedCount++;
-    }, i * 250);
+    return `
+      <section class="pdf-block">
+        <div class="pdf-head">
+          <div class="pdf-title">${idx + 1}. ${safeAssembly}</div>
+          <div class="pdf-sub">${safePkg}</div>
+          <div class="pdf-link">
+            <a href="${safeLink}" target="_blank" rel="noopener">PDF 새창 열기</a>
+          </div>
+        </div>
+        <iframe src="${safeLink}" loading="lazy"></iframe>
+      </section>
+    `;
+  }).join("");
+
+  const html = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>${escapeHtml(titleText)}</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: #f3f4f6;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.topbar button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.topbar button:hover {
+  background: #1d4ed8;
+}
+.topbar .count {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+.topbar .title {
+  width: 100%;
+  font-size: 15px;
+  font-weight: 700;
+  color: #111827;
+}
+.topbar .guide {
+  font-size: 12px;
+  color: #666;
+  width: 100%;
+}
+.viewer-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.pdf-block {
+  background: #fff;
+  margin-bottom: 22px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.pdf-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+.pdf-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+.pdf-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+.pdf-link {
+  margin-top: 6px;
+}
+.pdf-link a {
+  font-size: 13px;
+  color: #2563eb;
+  text-decoration: none;
+}
+.pdf-link a:hover {
+  text-decoration: underline;
+}
+iframe {
+  width: 100%;
+  height: 980px;
+  border: none;
+  display: block;
+  background: #fff;
+}
+@media print {
+  .topbar {
+    display: none !important;
   }
+  body {
+    background: #fff;
+  }
+  .viewer-wrap {
+    max-width: 100%;
+    padding: 0;
+  }
+  .pdf-block {
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0 0 12px 0;
+    page-break-after: always;
+  }
+  .pdf-block:last-child {
+    page-break-after: auto;
+  }
+  .pdf-head {
+    display: none;
+  }
+  iframe {
+    height: 1000px;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <div class="title">${escapeHtml(titleText)}</div>
+    <button onclick="window.print()">🖨️ 인쇄</button>
+    <button onclick="window.close()">닫기</button>
+    <div class="count">총 ${links.length}건</div>
+    <div class="guide">브라우저에 따라 iframe PDF 인쇄 반영이 다를 수 있습니다. 인쇄가 이상하면 'PDF 새창 열기'로 개별 출력해주세요.</div>
+  </div>
 
-  setTimeout(() => {
-    if (blockedCount > 0) {
-      alert(`총 ${total}건 중 일부 탭이 팝업 차단으로 열리지 않았을 수 있습니다.\n팝업 허용 후 다시 시도해주세요.`);
-    }
-  }, items.length * 250 + 500);
+  <div class="viewer-wrap">
+    ${blocks}
+  </div>
+</body>
+</html>
+  `;
+
+  newWin.document.open();
+  newWin.document.write(html);
+  newWin.document.close();
 }
 
-document.getElementById("bulkOpenBtn").addEventListener("click", () => {
+/* 버튼 기능 */
+document.getElementById("bulkPrintBtn").addEventListener("click", () => {
   if (!filteredData.length) {
     alert("검색된 결과가 없습니다.");
     return;
   }
-
-  const items = dedupeRowsByLink(filteredData);
-  if (!items.length) {
-    alert("검색 결과에 PDF 링크가 없습니다.");
-    return;
-  }
-
-  const ok = confirm(`현재 검색 결과 ${items.length}건을 새 탭으로 한꺼번에 여시겠습니까?`);
-  if (!ok) return;
-
-  openLinksSequentially(items);
+  openBulkPrintWindow(filteredData, "SUPT 검색결과 전체 출력");
 });
 
-document.getElementById("selectedOpenBtn").addEventListener("click", () => {
+document.getElementById("selectedPrintBtn").addEventListener("click", () => {
   const selectedRows = getRowsBySelectedKeys();
+
   if (!selectedRows.length) {
     alert("선택된 항목이 없습니다.");
     return;
   }
 
-  const items = dedupeRowsByLink(selectedRows);
-  if (!items.length) {
-    alert("선택 항목에 PDF 링크가 없습니다.");
-    return;
-  }
-
-  const ok = confirm(`선택한 ${items.length}건을 새 탭으로 여시겠습니까?`);
-  if (!ok) return;
-
-  openLinksSequentially(items);
+  openBulkPrintWindow(selectedRows, "SUPT 선택 항목 출력");
 });
 
 document.getElementById("selectAllBtn").addEventListener("click", () => {
@@ -672,6 +788,7 @@ document.getElementById("checkAll").addEventListener("change", (e) => {
   renderList();
 });
 
+/* 검색 이벤트 */
 let timer = null;
 document.getElementById("searchInput").addEventListener("input", () => {
   if (timer) clearTimeout(timer);
