@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
-<title>대공 PKG3 SUPT 조회</title>
+<title>대공 PKG BY SUPT 조회</title>
 
 <style>
 * { box-sizing: border-box; }
@@ -109,6 +109,36 @@ h1 {
   opacity: 0.9;
 }
 
+/* 상단 버튼 영역 */
+.action-bar {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin: 10px 0 12px;
+}
+
+.bulk-btn {
+  padding: 10px 16px;
+  background: #16a34a;
+  color: #fff;
+  border: none;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+.bulk-btn:hover {
+  background: #15803d;
+}
+
+.info-text {
+  font-size: 13px;
+  color: #555;
+  display: flex;
+  align-items: center;
+}
+
 /* 테이블 */
 table {
   width: 100%;
@@ -118,7 +148,7 @@ table {
 thead {
   background: #f7f7f9;
   position: sticky;
-  top: 108px;
+  top: 160px;
   z-index: 998;
 }
 th, td {
@@ -136,6 +166,12 @@ tbody tr {
   cursor: pointer;
 }
 
+.empty-row td {
+  padding: 24px 10px;
+  color: #777;
+  cursor: default;
+}
+
 /* PC 전용 뒤로가기 */
 .pc-back-btn {
   display: none;
@@ -148,6 +184,7 @@ tbody tr {
   font-size: 15px;
   font-weight: 600;
 }
+
 @media (min-width: 801px) {
   .pc-back-btn {
     display: inline-block;
@@ -176,7 +213,7 @@ tbody tr {
 
   .search-input-wrapper {
     order: 3;
-    flex: 1 1 65%;
+    flex: 1 1 100%;
   }
 
   .top-back-btn {
@@ -191,6 +228,19 @@ tbody tr {
 
   .pc-back-btn {
     display: none !important;
+  }
+
+  .action-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .bulk-btn {
+    width: 100%;
+  }
+
+  thead {
+    top: 210px;
   }
 }
 </style>
@@ -220,7 +270,12 @@ tbody tr {
 
     <div class="search-input-wrapper">
       <input id="searchInput" type="text" placeholder="예: DK3-AG-21-52-01-P-0001-KC 또는 2152-SS-005" />
-      <button id="clearBtn" class="clear-btn">×</button>
+      <button id="clearBtn" class="clear-btn" type="button">×</button>
+    </div>
+
+    <div class="action-bar">
+      <button id="bulkPrintBtn" class="bulk-btn" type="button">🖨️ 검색결과 일괄 출력</button>
+      <div class="info-text" id="resultInfo">검색 결과 0건</div>
     </div>
   </div>
 
@@ -241,8 +296,17 @@ tbody tr {
 </div>
 
 <script>
+function escapeHtml(str) {
+  return String(str ?? "")
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#039;");
+}
+
 function parseTextToData(text) {
-  const lines = text.trim().split("\n");
+  const lines = text.trim().split(/\r?\n/);
   const parsed = [];
 
   for (let line of lines) {
@@ -250,7 +314,6 @@ function parseTextToData(text) {
     if (!line) continue;
 
     const parts = line.split(/\t+/);
-
     if (parts.length < 3) continue;
 
     const pkgNo = parts[0].trim();
@@ -270,22 +333,32 @@ function parseTextToData(text) {
 }
 
 let rawData = [];
+let filteredData = [];
 
 async function loadData() {
-  const res = await fetch("supt.txt?_=" + Date.now());
-  const text = await res.text();
-  rawData = parseTextToData(text);
-  renderList();
+  try {
+    const res = await fetch("supt.txt?_=" + Date.now());
+    if (!res.ok) throw new Error("supt.txt 로드 실패");
+    const text = await res.text();
+    rawData = parseTextToData(text);
+    renderList();
+  } catch (err) {
+    console.error(err);
+    alert("supt.txt 파일을 불러오지 못했습니다.");
+  }
 }
 
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const kwRaw = document.getElementById("searchInput").value.trim().toLowerCase();
-  const kwNorm = kwRaw.replace(/[-_\s]/g, "");
+  const kwNorm = kwRaw.replace(/[-_\s.]/g, "");
   const tbody = document.getElementById("resultBody");
+  const resultInfo = document.getElementById("resultInfo");
   const hasKw = kwRaw.length > 0;
 
   tbody.innerHTML = "";
+  filteredData = [];
+
   const frag = document.createDocumentFragment();
 
   rawData.forEach(row => {
@@ -293,17 +366,19 @@ function renderList() {
 
     if (hasKw) {
       const ok = {
-        pkg: pkg.includes(kwRaw) || pkg.replace(/[-_\s]/g, "").includes(kwNorm),
-        assembly: assembly.includes(kwRaw) || assembly.replace(/[-_\s]/g, "").includes(kwNorm)
+        pkg: pkg.includes(kwRaw) || pkg.replace(/[-_\s.]/g, "").includes(kwNorm),
+        assembly: assembly.includes(kwRaw) || assembly.replace(/[-_\s.]/g, "").includes(kwNorm)
       };
 
       if (!ok[mode]) return;
     }
 
+    filteredData.push(row);
+
     const tr = document.createElement("tr");
     tr.innerHTML = `
-      <td>${row[0]}</td>
-      <td>${row[1]}</td>
+      <td>${escapeHtml(row[0])}</td>
+      <td>${escapeHtml(row[1])}</td>
     `;
 
     tr.addEventListener("click", () => {
@@ -328,23 +403,236 @@ function renderList() {
     frag.appendChild(tr);
   });
 
+  if (!filteredData.length) {
+    const tr = document.createElement("tr");
+    tr.className = "empty-row";
+    tr.innerHTML = `<td colspan="2">검색 결과가 없습니다.</td>`;
+    frag.appendChild(tr);
+  }
+
   tbody.appendChild(frag);
+  resultInfo.textContent = `검색 결과 ${filteredData.length}건`;
 }
+
+function openBulkPrintWindow(rows) {
+  const uniqueMap = new Map();
+
+  rows.forEach(row => {
+    const pkg = row[0];
+    const assembly = row[1];
+    const link = row[2];
+    if (!link) return;
+
+    const key = link.trim().toLowerCase();
+    if (!uniqueMap.has(key)) {
+      uniqueMap.set(key, { pkg, assembly, link });
+    }
+  });
+
+  const links = Array.from(uniqueMap.values());
+
+  if (!links.length) {
+    alert("출력할 PDF 링크가 없습니다.");
+    return;
+  }
+
+  const newWin = window.open("", "_blank");
+  if (!newWin) {
+    alert("팝업이 차단되었습니다. 팝업 허용 후 다시 시도해주세요.");
+    return;
+  }
+
+  const blocks = links.map((item, idx) => {
+    const safePkg = escapeHtml(item.pkg);
+    const safeAssembly = escapeHtml(item.assembly);
+    const safeLink = escapeHtml(item.link);
+
+    return `
+      <section class="pdf-block">
+        <div class="pdf-head">
+          <div class="pdf-title">${idx + 1}. ${safeAssembly}</div>
+          <div class="pdf-sub">${safePkg}</div>
+          <div class="pdf-link">
+            <a href="${safeLink}" target="_blank" rel="noopener">PDF 새창 열기</a>
+          </div>
+        </div>
+        <iframe src="${safeLink}" loading="lazy"></iframe>
+      </section>
+    `;
+  }).join("");
+
+  const html = `
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>SUPT 일괄 출력</title>
+<style>
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: #f3f4f6;
+}
+.topbar {
+  position: sticky;
+  top: 0;
+  z-index: 999;
+  background: #ffffff;
+  border-bottom: 1px solid #ddd;
+  padding: 12px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+.topbar button {
+  padding: 10px 14px;
+  border: none;
+  border-radius: 8px;
+  background: #2563eb;
+  color: #fff;
+  font-size: 14px;
+  font-weight: 600;
+  cursor: pointer;
+}
+.topbar button:hover {
+  background: #1d4ed8;
+}
+.topbar .count {
+  font-size: 14px;
+  color: #333;
+  font-weight: 600;
+}
+.topbar .guide {
+  font-size: 12px;
+  color: #666;
+  width: 100%;
+}
+.viewer-wrap {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 16px;
+}
+.pdf-block {
+  background: #fff;
+  margin-bottom: 22px;
+  border-radius: 12px;
+  box-shadow: 0 2px 10px rgba(0,0,0,0.08);
+  overflow: hidden;
+}
+.pdf-head {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #fafafa;
+}
+.pdf-title {
+  font-size: 16px;
+  font-weight: 700;
+  color: #111827;
+}
+.pdf-sub {
+  font-size: 13px;
+  color: #6b7280;
+  margin-top: 4px;
+}
+.pdf-link {
+  margin-top: 6px;
+}
+.pdf-link a {
+  font-size: 13px;
+  color: #2563eb;
+  text-decoration: none;
+}
+.pdf-link a:hover {
+  text-decoration: underline;
+}
+iframe {
+  width: 100%;
+  height: 980px;
+  border: none;
+  display: block;
+  background: #fff;
+}
+@media print {
+  .topbar {
+    display: none !important;
+  }
+  body {
+    background: #fff;
+  }
+  .viewer-wrap {
+    max-width: 100%;
+    padding: 0;
+  }
+  .pdf-block {
+    box-shadow: none;
+    border-radius: 0;
+    margin: 0 0 12px 0;
+    page-break-after: always;
+  }
+  .pdf-block:last-child {
+    page-break-after: auto;
+  }
+  .pdf-head {
+    display: none;
+  }
+  iframe {
+    height: 1000px;
+  }
+}
+</style>
+</head>
+<body>
+  <div class="topbar">
+    <button onclick="window.print()">🖨️ 인쇄</button>
+    <button onclick="window.close()">닫기</button>
+    <div class="count">총 ${links.length}건</div>
+    <div class="guide">브라우저에 따라 인쇄 미리보기 반영 방식이 조금 다를 수 있습니다. 안 맞으면 'PDF 새창 열기' 후 개별 출력도 가능합니다.</div>
+  </div>
+
+  <div class="viewer-wrap">
+    ${blocks}
+  </div>
+</body>
+</html>
+  `;
+
+  newWin.document.open();
+  newWin.document.write(html);
+  newWin.document.close();
+}
+
+document.getElementById("bulkPrintBtn").addEventListener("click", () => {
+  if (!filteredData.length) {
+    alert("검색된 결과가 없습니다.");
+    return;
+  }
+
+  const hasLinks = filteredData.some(row => row[2] && row[2].trim());
+  if (!hasLinks) {
+    alert("검색 결과에 PDF 링크가 없습니다.");
+    return;
+  }
+
+  openBulkPrintWindow(filteredData);
+});
 
 let timer = null;
 document.getElementById("searchInput").addEventListener("input", () => {
   if (timer) clearTimeout(timer);
-  timer = setTimeout(renderList, 300);
+  timer = setTimeout(renderList, 200);
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
   document.getElementById("searchInput").value = "";
   renderList();
+  document.getElementById("searchInput").focus();
 });
 
-document.querySelectorAll('input[name="mode"]').forEach(r =>
-  r.addEventListener("change", renderList)
-);
+document.querySelectorAll('input[name="mode"]').forEach(r => {
+  r.addEventListener("change", renderList);
+});
 
 loadData();
 </script>
