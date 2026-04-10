@@ -160,12 +160,10 @@ tbody tr {
 /* 모바일 전용 레이아웃 조정 */
 /* ---------------------- */
 @media (max-width: 800px), (max-height: 500px) {
-  /* 배지 숨기기 */
   .badge-fast {
     display: none;
   }
 
-  /* 상단바를 flex 컨테이너로 만들어 재배치 */
   .top-bar {
     display: flex;
     flex-wrap: wrap;
@@ -180,7 +178,6 @@ tbody tr {
     width: 100%;
   }
 
-  /* 검색창 + 뒤로가기 한 줄에 배치 */
   .search-input-wrapper {
     order: 3;
     flex: 1 1 65%;
@@ -196,7 +193,6 @@ tbody tr {
     align-self: center;
   }
 
-  /* 모바일에서는 PC 뒤로가기 버튼 완전 숨김 */
   .pc-back-btn {
     display: none !important;
   }
@@ -230,7 +226,7 @@ tbody tr {
     </div>
 
     <div class="search-input-wrapper">
-      <input id="searchInput" type="text" placeholder="예: 1234 1233 1222" />
+      <input id="searchInput" type="text" placeholder="예: 0001 0002 0003" />
       <button id="clearBtn" class="clear-btn">×</button>
     </div>
   </div>
@@ -275,10 +271,10 @@ function parseTextToData(text) {
 
     const row = [c0, c1, c2, c3, c4];
     row._lc = [
-      c0.toLowerCase(),
-      c1.toLowerCase(),
-      c2.toLowerCase(),
-      c3.toLowerCase()
+      (c0 || "").toLowerCase().trim(),
+      (c1 || "").toLowerCase().trim(),
+      (c2 || "").toLowerCase().trim(),
+      (c3 || "").toLowerCase().trim()
     ];
 
     parsed.push(row);
@@ -311,19 +307,24 @@ function renderList() {
 
     if (hasKw) {
       const [index, iso, rev, date] = lc;
-
       let matched = false;
 
       if (mode === "index") {
-        const keywords = kwRaw.split(/\s+/).filter(Boolean);
+        const keywords = kwRaw.split(/\s+/).map(v => v.trim()).filter(Boolean);
+        const indexNorm = index.replace(/[-_\s]/g, "");
+
         matched = keywords.some(word => {
           const wordNorm = word.replace(/[-_\s]/g, "");
-          return index.includes(word) || index.replace(/[-_\s]/g, "").includes(wordNorm);
+          return (
+            index === word ||
+            indexNorm === wordNorm ||
+            index.includes(word) ||
+            indexNorm.includes(wordNorm)
+          );
         });
       } else {
         const ok = {
           iso:  iso.includes(kwRaw)  || iso.replace(/[-_\s]/g, "").includes(kwNorm),
-          Rev:  rev.includes(kwRaw)  || rev.replace(/[-_\s]/g, "").includes(kwNorm),
           Date: date.includes(kwRaw) || date.replace(/[-_\s]/g, "").includes(kwNorm)
         };
         matched = !!ok[mode];
@@ -386,7 +387,7 @@ function renderList() {
 let timer = null;
 document.getElementById("searchInput").addEventListener("input", () => {
   if (timer) clearTimeout(timer);
-  timer = setTimeout(renderList, 2000);
+  timer = setTimeout(renderList, 300);
 });
 
 document.getElementById("clearBtn").addEventListener("click", () => {
