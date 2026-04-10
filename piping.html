@@ -374,7 +374,15 @@ function renderList() {
         return;
       }
 
-      window.open(link, "_blank", "noopener");
+      const popup = window.open(
+        link,
+        "isoWindow",
+        "width=1200,height=900,resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no"
+      );
+
+      if (!popup) {
+        alert("팝업이 차단되었습니다. 브라우저 팝업 허용 후 다시 시도해주세요.");
+      }
     });
 
     frag.appendChild(tr);
