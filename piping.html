@@ -189,14 +189,14 @@ tbody tr {
   .top-back-btn {
     order: 4;
     flex: 0 0 auto;
-    margin-top: 0 !important;   /* 인라인 스타일 덮어쓰기 */
+    margin-top: 0 !important;
     padding: 10px 12px !important;
     font-size: 13px !important;
     white-space: nowrap;
     align-self: center;
   }
 
-  /* ★ 모바일에서는 PC 뒤로가기 버튼 완전 숨김 */
+  /* 모바일에서는 PC 뒤로가기 버튼 완전 숨김 */
   .pc-back-btn {
     display: none !important;
   }
@@ -226,12 +226,11 @@ tbody tr {
     <div class="search-modes">
       <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
       <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
-      <!-- REV 검색 버튼 제거됨 -->
       <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
     </div>
 
     <div class="search-input-wrapper">
-      <input id="searchInput" type="text" placeholder="예: 0001, 00701, 2A, 251126 등" />
+      <input id="searchInput" type="text" placeholder="예: 1234 1233 1222" />
       <button id="clearBtn" class="clear-btn">×</button>
     </div>
   </div>
@@ -312,13 +311,25 @@ function renderList() {
 
     if (hasKw) {
       const [index, iso, rev, date] = lc;
-      const ok = {
-        index: index.includes(kwRaw) || index.replace(/[-_\s]/g, "").includes(kwNorm),
-        iso:   iso.includes(kwRaw)   || iso.replace(/[-_\s]/g, "").includes(kwNorm),
-        Rev:   rev.includes(kwRaw)   || rev.replace(/[-_\s]/g, "").includes(kwNorm),
-        Date:  date.includes(kwRaw)  || date.replace(/[-_\s]/g, "").includes(kwNorm)
-      };
-      if (!ok[mode]) return;
+
+      let matched = false;
+
+      if (mode === "index") {
+        const keywords = kwRaw.split(/\s+/).filter(Boolean);
+        matched = keywords.some(word => {
+          const wordNorm = word.replace(/[-_\s]/g, "");
+          return index.includes(word) || index.replace(/[-_\s]/g, "").includes(wordNorm);
+        });
+      } else {
+        const ok = {
+          iso:  iso.includes(kwRaw)  || iso.replace(/[-_\s]/g, "").includes(kwNorm),
+          Rev:  rev.includes(kwRaw)  || rev.replace(/[-_\s]/g, "").includes(kwNorm),
+          Date: date.includes(kwRaw) || date.replace(/[-_\s]/g, "").includes(kwNorm)
+        };
+        matched = !!ok[mode];
+      }
+
+      if (!matched) return;
     }
 
     // ------------------------------
@@ -345,9 +356,6 @@ function renderList() {
       <td>${dateDisplay}</td>
     `;
 
-    // ------------------------------------------
-    // ★ PC → 새창 / 모바일 → 현재 탭 열기
-    // ------------------------------------------
     tr.addEventListener("click", () => {
       const link = row[4];
       if (!link) {
@@ -360,13 +368,11 @@ function renderList() {
 
       const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
-      // 모바일 = 현재 탭
       if (isMobile) {
         window.location.href = link;
         return;
       }
 
-      // PC = 새탭
       window.open(link, "_blank", "noopener");
     });
 
