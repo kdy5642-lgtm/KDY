@@ -6,137 +6,160 @@
 <title>대공 PKG3 ISO DWG REVISION 조회</title>
 
 <style>
-* {
-  box-sizing: border-box;
-}
+* { box-sizing: border-box; }
 
 body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
+  background: #f0f2f5;
   margin: 0;
   padding: 0;
-  background: #f0f2f5;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
 }
 
 .container {
   max-width: 980px;
   margin: 0 auto;
-  background: #fff;
+  background: #ffffff;
   min-height: 100vh;
   padding: 12px 14px 40px;
 }
 
-/* 상단 */
+/* 상단 고정 바 */
 .top-bar {
   position: sticky;
   top: 0;
   z-index: 999;
-  background: #fff;
+  background: #ffffff;
   padding: 10px 8px 12px;
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
+/* 제목 */
 .title-row {
   display: flex;
-  justify-content: space-between;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
   flex-wrap: wrap;
+  gap: 8px;
 }
-
 h1 {
   margin: 0;
   font-size: 20px;
+  font-weight: 700;
 }
-
 .badge-fast {
   font-size: 11px;
   padding: 3px 8px;
-  border-radius: 999px;
   background: #e6f0ff;
+  border: 1px solid #bdd3ff;
   color: #2755c7;
+  border-radius: 999px;
+  white-space: nowrap;
 }
 
+/* 라디오 버튼 */
 .search-modes {
   display: flex;
   flex-wrap: wrap;
-  gap: 10px;
-  margin: 10px 0;
+  gap: 10px 14px;
+  margin: 10px 0 8px;
 }
 
 .search-modes label {
+  font-size: 14px;
   display: flex;
   align-items: center;
   gap: 4px;
-  background: #f6f7fb;
   padding: 4px 10px;
   border-radius: 999px;
+  background: #f6f7fb;
   cursor: pointer;
 }
 
+.search-modes input[type="radio"] {
+  accent-color: #2563eb;
+}
+
+/* 검색 입력 */
 .search-input-wrapper {
   position: relative;
+  width: 100%;
 }
 
 #searchInput {
   width: 100%;
   padding: 14px 48px 14px 18px;
+  font-size: 17px;
   border-radius: 999px;
   border: 1px solid #ccc;
-  font-size: 17px;
   outline: none;
 }
 
 .clear-btn {
   position: absolute;
-  right: 14px;
+  right: 16px;
   top: 50%;
   transform: translateY(-50%);
   border: none;
   background: none;
   font-size: 22px;
   cursor: pointer;
+  opacity: 0.5;
+}
+.clear-btn:hover {
+  opacity: 0.9;
 }
 
 /* 테이블 */
 table {
   width: 100%;
   border-collapse: collapse;
-  margin-top: 10px;
   font-size: 14px;
 }
-
 thead {
   background: #f7f7f9;
   position: sticky;
   top: 108px;
   z-index: 998;
 }
-
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
 }
-
 tbody tr:nth-child(odd) {
   background: #fcfcff;
 }
-
 tbody tr:hover {
   background: #eef6ff;
 }
 
+/* 행 커서 */
 tbody tr {
   cursor: pointer;
 }
 
-/* 모바일 */
-@media (max-width: 800px) {
-
-  thead {
-    position: static;
+/* PC 전용 뒤로가기 */
+.pc-back-btn {
+  display: none;
+  margin-top: 18px;
+  padding: 12px 18px;
+  background: #2563eb;
+  color: #fff;
+  text-decoration: none;
+  border-radius: 8px;
+  font-size: 15px;
+  font-weight: 600;
+}
+@media (min-width: 801px) {
+  .pc-back-btn {
+    display: inline-block;
   }
+}
 
+/* ---------------------- */
+/* 모바일 전용 레이아웃 조정 */
+/* ---------------------- */
+@media (max-width: 800px), (max-height: 500px) {
   .badge-fast {
     display: none;
   }
@@ -147,192 +170,151 @@ tbody tr {
     gap: 8px;
   }
 
-  .title-row,
+  .title-row {
+    width: 100%;
+  }
+
   .search-modes {
     width: 100%;
+  }
+
+  .search-input-wrapper {
+    order: 3;
+    flex: 1 1 65%;
+  }
+
+  .top-back-btn {
+    order: 4;
+    flex: 0 0 auto;
+    margin-top: 0 !important;
+    padding: 10px 12px !important;
+    font-size: 13px !important;
+    white-space: nowrap;
+    align-self: center;
+  }
+
+  .pc-back-btn {
+    display: none !important;
   }
 }
 </style>
 </head>
 
 <body>
-
 <div class="container">
-
+  
+  <!-- 상단 고정 영역 -->
   <div class="top-bar">
-
     <div class="title-row">
       <h1>대공 PKG3 ISO DWG REVISION 현황</h1>
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
+    <!-- 상단 뒤로가기 버튼 -->
+    <a href="https://kdy5642-lgtm.github.io/KDY/"
+       class="top-back-btn"
+       style="display:inline-block; margin-top:10px; padding:10px 16px;
+              background:#2563eb; color:#fff; text-decoration:none;
+              border-radius:8px; font-size:14px;">
+      ◀ 뒤로가기
+    </a>
+
     <div class="search-modes">
-      <label>
-        <input type="radio" name="mode" value="index" checked>
-        INDEX 검색
-      </label>
-
-      <label>
-        <input type="radio" name="mode" value="iso">
-        ISO 검색
-      </label>
-
-      <label>
-        <input type="radio" name="mode" value="Date">
-        DATE 검색
-      </label>
+      <label><input type="radio" name="mode" value="index" checked><span>INDEX 검색</span></label>
+      <label><input type="radio" name="mode" value="iso"><span>ISO 검색</span></label>
+      <label><input type="radio" name="mode" value="Date"><span>DATE 검색</span></label>
     </div>
 
     <div class="search-input-wrapper">
-      <input id="searchInput" type="text" placeholder="예: 0001 0002">
+      <input id="searchInput" type="text" placeholder="예: 0001 0002 0003" />
       <button id="clearBtn" class="clear-btn">×</button>
     </div>
-
   </div>
 
+  <!-- 테이블 -->
   <table>
     <thead>
       <tr>
         <th style="width:80px;">INDEX</th>
         <th>ISO 도면번호</th>
-        <th style="width:160px;">REV</th>
-        <th style="width:160px;">DATE</th>
+        <th style="width:160px;">Rev</th>
+        <th style="width:160px;">Date</th>
       </tr>
     </thead>
-
-    <tbody id="resultBody">
-      <tr>
-        <td colspan="4">데이터 불러오는 중...</td>
-      </tr>
-    </tbody>
+    <tbody id="resultBody"></tbody>
   </table>
+
+  <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
+    ◀ 뒤로가기 (PC)
+  </a>
 
 </div>
 
 <script>
-// -----------------------------
-// TXT 파싱
-// -----------------------------
+// ------------------------------------------
+// TXT 파싱 (앞 4개 split + 나머지 전체 링크 처리)
+// ------------------------------------------
 function parseTextToData(text) {
-
   const lines = text.trim().split("\n");
   const parsed = [];
 
   for (let line of lines) {
-
     line = line.trim();
-
     if (!line) continue;
 
     const parts = line.split(/[\t ]+/g);
-
     const first4 = parts.slice(0, 4);
-
     const link = line.substring(first4.join(" ").length).trim();
 
     const [c0, c1, c2, c3] = first4;
+    const c4 = link;
 
-    const row = [c0, c1, c2, c3, link];
-
+    const row = [c0, c1, c2, c3, c4];
     row._lc = [
-      (c0 || "").toLowerCase(),
-      (c1 || "").toLowerCase(),
-      (c2 || "").toLowerCase(),
-      (c3 || "").toLowerCase()
+      (c0 || "").toLowerCase().trim(),
+      (c1 || "").toLowerCase().trim(),
+      (c2 || "").toLowerCase().trim(),
+      (c3 || "").toLowerCase().trim()
     ];
 
     parsed.push(row);
   }
-
   return parsed;
 }
 
-// -----------------------------
+// ------------------------------------------
 let rawData = [];
-
-// -----------------------------
 async function loadData() {
-
-  const tbody = document.getElementById("resultBody");
-
-  try {
-
-    const res = await fetch("./pipingdata.txt?_=" + Date.now());
-
-    const text = await res.text();
-
-    rawData = parseTextToData(text);
-
-    // 모바일 첫 렌더링 꼬임 방지
-    renderList();
-
-    setTimeout(() => {
-      renderList();
-    }, 300);
-
-  } catch (err) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4" style="color:red;">
-          데이터 로딩 실패
-        </td>
-      </tr>
-    `;
-  }
+  const res = await fetch("pipingdata.txt?_=" + Date.now());
+  const text = await res.text();
+  rawData = parseTextToData(text);
+  renderList();
 }
 
-// -----------------------------
+// ------------------------------------------
 function renderList() {
-
-  const mode =
-    document.querySelector('input[name="mode"]:checked').value;
-
-  const kwRaw =
-    document.getElementById("searchInput")
-    .value
-    .trim()
-    .toLowerCase();
-
-  const kwNorm =
-    kwRaw.replace(/[-_\s]/g, "");
-
-  const tbody =
-    document.getElementById("resultBody");
-
-  const hasKw =
-    kwRaw.length > 0;
+  const mode = document.querySelector('input[name="mode"]:checked').value;
+  const kwRaw = document.getElementById("searchInput").value.trim().toLowerCase();
+  const kwNorm = kwRaw.replace(/[-_\s]/g, "");
+  const tbody = document.getElementById("resultBody");
+  const hasKw = kwRaw.length > 0;
 
   tbody.innerHTML = "";
-
-  const frag =
-    document.createDocumentFragment();
+  const frag = document.createDocumentFragment();
 
   rawData.forEach(row => {
-
     const lc = row._lc;
 
     if (hasKw) {
-
       const [index, iso, rev, date] = lc;
-
       let matched = false;
 
       if (mode === "index") {
-
-        const keywords =
-          kwRaw.split(/\s+/)
-          .map(v => v.trim())
-          .filter(Boolean);
-
-        const indexNorm =
-          index.replace(/[-_\s]/g, "");
+        const keywords = kwRaw.split(/\s+/).map(v => v.trim()).filter(Boolean);
+        const indexNorm = index.replace(/[-_\s]/g, "");
 
         matched = keywords.some(word => {
-
-          const wordNorm =
-            word.replace(/[-_\s]/g, "");
-
+          const wordNorm = word.replace(/[-_\s]/g, "");
           return (
             index === word ||
             indexNorm === wordNorm ||
@@ -340,43 +322,34 @@ function renderList() {
             indexNorm.includes(wordNorm)
           );
         });
-
-      } else if (mode === "iso") {
-
-        matched =
-          iso.includes(kwRaw) ||
-          iso.replace(/[-_\s]/g, "").includes(kwNorm);
-
-      } else if (mode === "Date") {
-
-        matched =
-          date.includes(kwRaw) ||
-          date.replace(/[-_\s]/g, "").includes(kwNorm);
+      } else {
+        const ok = {
+          iso:  iso.includes(kwRaw)  || iso.replace(/[-_\s]/g, "").includes(kwNorm),
+          Date: date.includes(kwRaw) || date.replace(/[-_\s]/g, "").includes(kwNorm)
+        };
+        matched = !!ok[mode];
       }
 
       if (!matched) return;
     }
 
+    // ------------------------------
+    // 모바일용 DATE 변환 (YYYY-MM-DD → YYMMDD)
+    // ------------------------------
+    const isMobileForDate = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     let dateDisplay = row[3];
 
-    const isMobile =
-      /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
-
-    if (isMobile) {
-
+    if (isMobileForDate) {
       const parts = row[3].split("-");
-
       if (parts.length === 3) {
-
-        dateDisplay =
-          parts[0].slice(2) +
-          parts[1] +
-          parts[2];
+        const yy = parts[0].slice(2);
+        const mm = parts[1];
+        const dd = parts[2];
+        dateDisplay = yy + mm + dd;
       }
     }
 
     const tr = document.createElement("tr");
-
     tr.innerHTML = `
       <td>${row[0]}</td>
       <td>${row[1]}</td>
@@ -385,30 +358,30 @@ function renderList() {
     `;
 
     tr.addEventListener("click", () => {
-
       const link = row[4];
-
       if (!link) {
-        alert("도면 링크가 없습니다.");
+        alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
         return;
       }
 
-      const ok =
-        confirm(`아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`);
+      const msg = `아래 ISO 도면을 여시겠습니까?\n\n${row[1]}`;
+      if (!confirm(msg)) return;
 
-      if (!ok) return;
+      const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
 
       if (isMobile) {
-
         window.location.href = link;
+        return;
+      }
 
-      } else {
+      const popup = window.open(
+        link,
+        "isoWindow",
+        "width=1200,height=900,resizable=yes,scrollbars=yes,status=no,toolbar=no,menubar=no,location=no"
+      );
 
-        window.open(
-          link,
-          "isoWindow",
-          "width=1200,height=900,resizable=yes,scrollbars=yes"
-        );
+      if (!popup) {
+        alert("팝업이 차단되었습니다. 브라우저 팝업 허용 후 다시 시도해주세요.");
       }
     });
 
@@ -416,57 +389,25 @@ function renderList() {
   });
 
   tbody.appendChild(frag);
-
-  if (!tbody.children.length) {
-
-    tbody.innerHTML = `
-      <tr>
-        <td colspan="4">
-          검색 결과가 없습니다.
-        </td>
-      </tr>
-    `;
-  }
 }
 
-// -----------------------------
+// ------------------------------------------
 let timer = null;
-
-document.getElementById("searchInput")
-.addEventListener("input", () => {
-
+document.getElementById("searchInput").addEventListener("input", () => {
   if (timer) clearTimeout(timer);
-
-  timer = setTimeout(renderList, 200);
+  timer = setTimeout(renderList, 300);
 });
 
-// -----------------------------
-document.getElementById("clearBtn")
-.addEventListener("click", () => {
-
+document.getElementById("clearBtn").addEventListener("click", () => {
   document.getElementById("searchInput").value = "";
-
   renderList();
 });
 
-// -----------------------------
-document.querySelectorAll('input[name="mode"]')
-.forEach(r => {
+document.querySelectorAll('input[name="mode"]').forEach(r =>
+  r.addEventListener("change", renderList)
+);
 
-  r.addEventListener("change", renderList);
-});
-
-// -----------------------------
-window.addEventListener("pageshow", () => {
-
-  if (rawData.length) {
-    renderList();
-  }
-});
-
-// -----------------------------
 loadData();
 </script>
-
 </body>
 </html>
