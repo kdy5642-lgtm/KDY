@@ -23,7 +23,6 @@ body {
   padding: 12px 14px 40px;
 }
 
-/* 상단 고정 바 */
 .top-bar {
   position: sticky;
   top: 0;
@@ -33,7 +32,6 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.08);
 }
 
-/* 제목 */
 .title-row {
   display: flex;
   align-items: center;
@@ -41,11 +39,13 @@ body {
   flex-wrap: wrap;
   gap: 8px;
 }
+
 h1 {
   margin: 0;
   font-size: 20px;
   font-weight: 700;
 }
+
 .badge-fast {
   font-size: 11px;
   padding: 3px 8px;
@@ -56,7 +56,6 @@ h1 {
   white-space: nowrap;
 }
 
-/* 라디오 버튼 */
 .search-modes {
   display: flex;
   flex-wrap: wrap;
@@ -79,7 +78,6 @@ h1 {
   accent-color: #2563eb;
 }
 
-/* 검색 입력 */
 .search-input-wrapper {
   position: relative;
   width: 100%;
@@ -105,40 +103,43 @@ h1 {
   cursor: pointer;
   opacity: 0.5;
 }
+
 .clear-btn:hover {
   opacity: 0.9;
 }
 
-/* 테이블 */
 table {
   width: 100%;
   border-collapse: collapse;
   font-size: 14px;
+  margin-top: 10px;
 }
+
 thead {
   background: #f7f7f9;
   position: sticky;
   top: 108px;
   z-index: 998;
 }
+
 th, td {
   padding: 8px 10px;
   border-bottom: 1px solid #e0e0e0;
   text-align: center;
 }
+
 tbody tr:nth-child(odd) {
   background: #fcfcff;
 }
+
 tbody tr:hover {
   background: #eef6ff;
 }
 
-/* 행 커서 */
 tbody tr {
   cursor: pointer;
 }
 
-/* PC 전용 뒤로가기 */
 .pc-back-btn {
   display: none;
   margin-top: 18px;
@@ -150,15 +151,13 @@ tbody tr {
   font-size: 15px;
   font-weight: 600;
 }
+
 @media (min-width: 801px) {
   .pc-back-btn {
     display: inline-block;
   }
 }
 
-/* ---------------------- */
-/* 모바일 전용 레이아웃 조정 */
-/* ---------------------- */
 @media (max-width: 800px), (max-height: 500px) {
   .badge-fast {
     display: none;
@@ -196,21 +195,28 @@ tbody tr {
   .pc-back-btn {
     display: none !important;
   }
+
+  /* 모바일에서 첫 리스트 안 보이는 문제 방지 */
+  thead {
+    position: static;
+  }
+
+  table {
+    margin-top: 10px;
+  }
 }
 </style>
 </head>
 
 <body>
 <div class="container">
-  
-  <!-- 상단 고정 영역 -->
+
   <div class="top-bar">
     <div class="title-row">
       <h1>대공 PKG3 ISO DWG REVISION 현황</h1>
       <div class="badge-fast">현장 태그 / 타입 빠른 검색</div>
     </div>
 
-    <!-- 상단 뒤로가기 버튼 -->
     <a href="https://kdy5642-lgtm.github.io/KDY/"
        class="top-back-btn"
        style="display:inline-block; margin-top:10px; padding:10px 16px;
@@ -231,7 +237,6 @@ tbody tr {
     </div>
   </div>
 
-  <!-- 테이블 -->
   <table>
     <thead>
       <tr>
@@ -241,7 +246,11 @@ tbody tr {
         <th style="width:160px;">Date</th>
       </tr>
     </thead>
-    <tbody id="resultBody"></tbody>
+    <tbody id="resultBody">
+      <tr>
+        <td colspan="4">데이터 불러오는 중...</td>
+      </tr>
+    </tbody>
   </table>
 
   <a href="https://kdy5642-lgtm.github.io/KDY/" class="pc-back-btn">
@@ -251,9 +260,6 @@ tbody tr {
 </div>
 
 <script>
-// ------------------------------------------
-// TXT 파싱 (앞 4개 split + 나머지 전체 링크 처리)
-// ------------------------------------------
 function parseTextToData(text) {
   const lines = text.trim().split("\n");
   const parsed = [];
@@ -270,6 +276,7 @@ function parseTextToData(text) {
     const c4 = link;
 
     const row = [c0, c1, c2, c3, c4];
+
     row._lc = [
       (c0 || "").toLowerCase().trim(),
       (c1 || "").toLowerCase().trim(),
@@ -279,19 +286,55 @@ function parseTextToData(text) {
 
     parsed.push(row);
   }
+
   return parsed;
 }
 
-// ------------------------------------------
 let rawData = [];
+
 async function loadData() {
-  const res = await fetch("pipingdata.txt?_=" + Date.now());
-  const text = await res.text();
-  rawData = parseTextToData(text);
-  renderList();
+  const tbody = document.getElementById("resultBody");
+
+  try {
+    const res = await fetch("./pipingdata.txt?_=" + Date.now());
+
+    if (!res.ok) {
+      throw new Error("pipingdata.txt 불러오기 실패 : " + res.status);
+    }
+
+    const text = await res.text();
+
+    if (!text.trim()) {
+      tbody.innerHTML = `
+        <tr>
+          <td colspan="4">pipingdata.txt 파일에 데이터가 없습니다.</td>
+        </tr>
+      `;
+      return;
+    }
+
+    rawData = parseTextToData(text);
+
+    document.getElementById("searchInput").value = "";
+    renderList();
+
+    setTimeout(() => {
+      window.scrollTo(0, 0);
+    }, 100);
+
+  } catch (err) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4" style="color:red; padding:20px;">
+          데이터 로딩 실패<br>
+          pipingdata.txt 파일 위치 또는 파일명을 확인하세요.<br>
+          ${err.message}
+        </td>
+      </tr>
+    `;
+  }
 }
 
-// ------------------------------------------
 function renderList() {
   const mode = document.querySelector('input[name="mode"]:checked').value;
   const kwRaw = document.getElementById("searchInput").value.trim().toLowerCase();
@@ -300,6 +343,16 @@ function renderList() {
   const hasKw = kwRaw.length > 0;
 
   tbody.innerHTML = "";
+
+  if (!rawData.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">표시할 데이터가 없습니다.</td>
+      </tr>
+    `;
+    return;
+  }
+
   const frag = document.createDocumentFragment();
 
   rawData.forEach(row => {
@@ -322,34 +375,33 @@ function renderList() {
             indexNorm.includes(wordNorm)
           );
         });
-      } else {
-        const ok = {
-          iso:  iso.includes(kwRaw)  || iso.replace(/[-_\s]/g, "").includes(kwNorm),
-          Date: date.includes(kwRaw) || date.replace(/[-_\s]/g, "").includes(kwNorm)
-        };
-        matched = !!ok[mode];
+
+      } else if (mode === "iso") {
+        matched =
+          iso.includes(kwRaw) ||
+          iso.replace(/[-_\s]/g, "").includes(kwNorm);
+
+      } else if (mode === "Date") {
+        matched =
+          date.includes(kwRaw) ||
+          date.replace(/[-_\s]/g, "").includes(kwNorm);
       }
 
       if (!matched) return;
     }
 
-    // ------------------------------
-    // 모바일용 DATE 변환 (YYYY-MM-DD → YYMMDD)
-    // ------------------------------
     const isMobileForDate = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
     let dateDisplay = row[3];
 
     if (isMobileForDate) {
       const parts = row[3].split("-");
       if (parts.length === 3) {
-        const yy = parts[0].slice(2);
-        const mm = parts[1];
-        const dd = parts[2];
-        dateDisplay = yy + mm + dd;
+        dateDisplay = parts[0].slice(2) + parts[1] + parts[2];
       }
     }
 
     const tr = document.createElement("tr");
+
     tr.innerHTML = `
       <td>${row[0]}</td>
       <td>${row[1]}</td>
@@ -359,6 +411,7 @@ function renderList() {
 
     tr.addEventListener("click", () => {
       const link = row[4];
+
       if (!link) {
         alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
         return;
@@ -389,10 +442,18 @@ function renderList() {
   });
 
   tbody.appendChild(frag);
+
+  if (!tbody.children.length) {
+    tbody.innerHTML = `
+      <tr>
+        <td colspan="4">검색 결과가 없습니다.</td>
+      </tr>
+    `;
+  }
 }
 
-// ------------------------------------------
 let timer = null;
+
 document.getElementById("searchInput").addEventListener("input", () => {
   if (timer) clearTimeout(timer);
   timer = setTimeout(renderList, 300);
@@ -403,9 +464,13 @@ document.getElementById("clearBtn").addEventListener("click", () => {
   renderList();
 });
 
-document.querySelectorAll('input[name="mode"]').forEach(r =>
-  r.addEventListener("change", renderList)
-);
+document.querySelectorAll('input[name="mode"]').forEach(radio => {
+  radio.addEventListener("change", renderList);
+});
+
+window.addEventListener("pageshow", () => {
+  if (rawData.length) renderList();
+});
 
 loadData();
 </script>
