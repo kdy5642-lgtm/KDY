@@ -1,156 +1,99 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1">
-<title>SHAHEEN PKG3 기계/배관 현장작업 참고용</title>
-
-<style>
-* { box-sizing: border-box; }
-body {
-  margin: 0;
-  padding: 0;
-  background: #e9ecef;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Arial, sans-serif;
-}
-
-.container {
-  max-width: 600px;
-  margin: 20px auto;
-  padding: 40px 20px;
-  text-align: center;
-  background: #ffffff;
-  border: 4px solid #1d7df5;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-}
-
-h1 {
-  font-size: 22px;
-  font-weight: 700;
-  margin-bottom: 10px;
-  color: #222;
-}
-
-/* 날짜 표시 */
-#dateInfo {
-  font-size: 14px;
-  margin-bottom: 25px;
-  color: #666;
-}
-
-/* 메뉴 버튼 */
-.menu-btn {
-  display: block;
-  width: 100%;
-  background: #2563eb;
-  color: white;
-  text-decoration: none;
-  padding: 16px;
-  border-radius: 12px;
-  font-size: 18px;
-  margin-bottom: 16px;
-  font-weight: 600;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.15);
-}
-.menu-btn:hover { background: #1e4fc9; }
-
-/* 🔵 로딩 스피너 */
-.loading-overlay {
-  display: none;
-  position: fixed;
-  top: 0; left: 0; right: 0; bottom: 0;
-  background: rgba(255,255,255,0.9);
-  z-index: 9999;
-  align-items: center;
-  justify-content: center;
-}
-
-.spinner {
-  border: 6px solid #ccc;
-  border-top: 6px solid #1d7df5;
-  border-radius: 50%;
-  width: 60px;
-  height: 60px;
-  animation: spin 1s linear infinite;
-}
-
-@keyframes spin {
-  0% { transform: rotate(0deg); }
-  100% { transform: rotate(360deg); }
-}
-</style>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <meta name="robots" content="noindex,nofollow" />
+  <title>SHAHEEN PKG3 현장 작업 참고</title>
+  <link rel="stylesheet" href="site.css" />
 </head>
 <body>
+  <main class="home-shell">
+    <section class="home-hero">
+      <p class="kicker">SHAHEEN PKG3</p>
+      <h1>대공 기계/배관 현장 작업 참고</h1>
+      <div class="sub-title">PLANTA 기준 조회 자료</div>
+      <div class="home-meta">
+        <span class="pill" id="dateInfo">적용기준 로딩 중</span>
+        <span class="pill">GitHub Pages</span>
+      </div>
+    </section>
 
-<div class="container">
+    <nav class="menu-grid" aria-label="PKG3 메뉴">
+      <a class="menu-card" href="piping.html">
+        <span class="mark"></span>
+        <span>
+          <strong>ISO DWG Viewer</strong>
+          <small>LAST REV 기준 도면 조회</small>
+        </span>
+      </a>
+      <a class="menu-card" href="rev.html">
+        <span class="mark"></span>
+        <span>
+          <strong>Revision History</strong>
+          <small>ISO DWG Revision 이력</small>
+        </span>
+      </a>
+      <a class="menu-card" href="wir.html">
+        <span class="mark"></span>
+        <span>
+          <strong>Welding Information</strong>
+          <small>Joint / W.D No / Date 조회</small>
+        </span>
+      </a>
+      <a class="menu-card" href="supt1.html">
+        <span class="mark"></span>
+        <span>
+          <strong>Piping Support 정보</strong>
+          <small>ISO 기준 TAG / TYPE 조회</small>
+        </span>
+      </a>
+      <a class="menu-card" href="https://kdy5642.synology.me/keyplan.png">
+        <span class="mark"></span>
+        <span>
+          <strong>Key Plan</strong>
+          <small>좌표 입력용 파일</small>
+        </span>
+      </a>
+      <a class="menu-card" href="barcode.html">
+        <span class="mark"></span>
+        <span>
+          <strong>Spool Location</strong>
+          <small>스풀 위치 및 Barcode 확인</small>
+        </span>
+      </a>
+      <a class="menu-card" href="supt.html">
+        <span class="mark"></span>
+        <span>
+          <strong>PKG By Support</strong>
+          <small>Support Drawing별 패키지 조회</small>
+        </span>
+      </a>
+      <a class="menu-card" href="remain.html">
+        <span class="mark"></span>
+        <span>
+          <strong>Incomplete Joint</strong>
+          <small>미완료 Joint 현황</small>
+        </span>
+      </a>
+    </nav>
 
-  <h1>PKG3 대공 기계/배관 현장작업 참고용 [PLANTA]</h1>
+    <footer class="site-footer">PKG3 field reference</footer>
+  </main>
 
-  <div id="dateInfo">불러오는 중...</div>
+  <script>
+    async function loadDateInfo() {
+      const target = document.getElementById("dateInfo");
+      try {
+        const response = await fetch("date.txt?_=" + Date.now(), { cache: "no-store" });
+        const text = await response.text();
+        target.textContent = "적용기준 " + text.trim();
+      } catch (error) {
+        target.textContent = "적용기준 확인 불가";
+      }
+    }
 
-  <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/piping.html">
-    ISO DWG VIEWER [LAST REV]
-  </a>
-
-  <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/rev.html">
-    ISO DWG Revision History
-  </a>
-
-  <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/wir.html">
-    Welding Imfomation
-  </a>
-
-  <a class="menu-btn" href="https://kdy5642-lgtm.github.io/KDY/supt1.html">
-    PIPING SUPPORT 정보
-  </a>
-
-  <!-- 🔵 KEY PLAN 버튼 (로딩 적용) -->
-  <a class="menu-btn" id="keyBtn" href="#">
-    KEY PLAN FILE [좌표입력]
-  </a>
-
-  <a class="menu-btn" href="barcode.html">
-    스풀 위치 확인
-  </a>
-
-  <a class="menu-btn" href="supt.html">
-    PKG BY SUPT
-  </a>
-
-</div>
-
-<!-- 🔵 전체 화면 로딩 오버레이 -->
-<div class="loading-overlay" id="loadingOverlay">
-  <div class="spinner"></div>
-</div>
-
-<script>
-// 날짜 정보 로드
-async function loadDateInfo() {
-  try {
-    const res = await fetch("date.txt?_=" + Date.now());
-    const text = await res.text();
-    document.getElementById("dateInfo").innerText = "적용기준 : " + text.trim();
-  } catch (e) {
-    document.getElementById("dateInfo").innerText = "적용기준: 불러오기 실패";
-  }
-}
-loadDateInfo();
-
-// 🔵 KEY PLAN 클릭 시 로딩 스피너 표시 → PNG 로 이동
-document.getElementById("keyBtn").addEventListener("click", function(e) {
-  e.preventDefault();
-
-  // 스피너 표시
-  document.getElementById("loadingOverlay").style.display = "flex";
-
-  // 200ms 후 이미지 페이지로 이동
-  setTimeout(() => {
-    window.location.href = "https://kdy5642.synology.me/keyplan.png";
-  }, 200);
-});
-</script>
-
+    loadDateInfo();
+  </script>
 </body>
 </html>
