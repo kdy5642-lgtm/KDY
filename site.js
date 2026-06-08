@@ -399,6 +399,7 @@
 
   function openRowLink(row) {
     if (!row.link) {
+      alert("이 행에는 도면 링크가 등록되어 있지 않습니다.");
       return;
     }
 
@@ -407,7 +408,7 @@
       return;
     }
 
-    const popup = window.open(row.link, "_blank", "noopener,noreferrer");
+    const popup = window.open(row.link, "_blank");
     if (!popup) {
       window.location.href = row.link;
     }
@@ -513,6 +514,10 @@
     return line.trim().split(/[\t ]+/g).filter(Boolean);
   }
 
+  function extractUrl(cols) {
+    return cols.find(value => /^https?:\/\//i.test(value)) || "";
+  }
+
   function parseLines(text, mapper) {
     return text.split(/\r?\n/g).map(line => line.trim()).filter(Boolean).map(splitTokens).map(mapper).filter(Boolean);
   }
@@ -525,7 +530,7 @@
         iso: cols[1],
         rev: cols[2],
         date: cols[3],
-        link: cols.slice(4).join(" ")
+        link: extractUrl(cols)
       };
     });
   }
@@ -538,7 +543,7 @@
         iso: cols[1],
         barcode: cols[2],
         location: cols[3],
-        link: cols.slice(4).join(" ")
+        link: extractUrl(cols)
       };
     });
   }
@@ -550,7 +555,7 @@
         index: cols[0],
         iso: cols[1],
         joint: cols[2],
-        link: cols.slice(3).find(value => /^https?:\/\//i.test(value)) || ""
+        link: extractUrl(cols)
       };
     });
   }
@@ -564,7 +569,7 @@
         joint: cols[2],
         wdNo: cols[3] === "-" ? "" : cols[3],
         date: cols[4] === "-" ? "" : cols[4],
-        link: cols.slice(5).find(value => /^https?:\/\//i.test(value)) || ""
+        link: extractUrl(cols)
       };
     });
   }
@@ -587,7 +592,7 @@
       return {
         iso: cols[0],
         support: cols[1],
-        link: cols.slice(2).find(value => /^https?:\/\//i.test(value)) || ""
+        link: extractUrl(cols)
       };
     });
   }
