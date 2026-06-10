@@ -509,12 +509,12 @@ tbody tr.state-empty {
 @media (max-width: 840px) {
   .app-shell,
   .home-shell {
-    padding: 10px;
+    padding: 8px;
   }
 
   .top-bar,
   .home-hero {
-    border-radius: 0 0 12px 12px;
+    border-radius: 10px;
   }
 
   .title-row,
@@ -526,8 +526,12 @@ tbody tr.state-empty {
     justify-content: flex-start;
   }
 
+  .nav-actions .btn {
+    flex: 1 1 0;
+  }
+
   h1 {
-    font-size: 20px;
+    font-size: 19px;
   }
 
   .home-hero h1 {
@@ -539,11 +543,114 @@ tbody tr.state-empty {
   }
 
   .table-wrap {
-    max-height: calc(100vh - 244px);
-    border-radius: 8px;
+    max-height: none;
+    overflow: visible;
+    border: 0;
+    border-radius: 0;
+    background: transparent;
+    box-shadow: none;
   }
 
   table {
-    min-width: 680px;
+    min-width: 0;
+    display: block;
+  }
+
+  thead {
+    display: none;
+  }
+
+  tbody {
+    display: grid;
+    gap: 8px;
+  }
+
+  tbody tr,
+  tbody tr:nth-child(odd),
+  tbody tr:hover {
+    display: grid;
+    gap: 0;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: #fff;
+    box-shadow: 0 6px 18px rgba(19, 28, 44, 0.05);
+    overflow: hidden;
+  }
+
+  tbody tr.state-ok {
+    background: #fff !important;
+    border-left: 5px solid var(--green);
+  }
+
+  tbody tr.state-credit {
+    background: #fff !important;
+    border-left: 5px solid var(--pink);
+    color: var(--text);
+  }
+
+  tbody tr.selected-row {
+    background: #fff !important;
+    border-color: rgba(37, 99, 235, 0.5);
+  }
+
+  th,
+  td {
+    white-space: normal;
+  }
+
+  tbody td {
+    display: grid;
+    grid-template-columns: 86px minmax(0, 1fr);
+    gap: 8px;
+    align-items: start;
+    border-bottom: 1px solid #edf0f4;
+    padding: 8px 10px;
+    text-align: left;
+    word-break: break-word;
+    overflow-wrap: anywhere;
+  }
+
+  tbody td:last-child {
+    border-bottom: 0;
+  }
+
+  tbody td::before {
+    content: attr(data-label);
+    color: var(--muted);
+    font-size: 11px;
+    font-weight: 900;
+    text-transform: uppercase;
+  }
+
+  .select-cell {
+    text-align: left;
+  }
+
+  .tool-row,
+  .status-pills,
+  .print-actions {
+    display: grid;
+    gap: 6px;
+    width: 100%;
+  }
+
+  .tool-row {
+    grid-template-columns: 1fr;
+  }
+
+  .status-pills,
+  .print-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .pill,
+  .print-actions .btn {
+    width: 100%;
+  }
+
+  .search-modes label {
+    flex: 1 1 auto;
+    justify-content: center;
+    min-width: 82px;
   }
 }

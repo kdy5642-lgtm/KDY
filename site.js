@@ -356,6 +356,7 @@
       if (cfg.selectable) {
         const td = document.createElement("td");
         td.className = "select-cell";
+        td.setAttribute("data-label", "선택");
         const checkbox = document.createElement("input");
         checkbox.type = "checkbox";
         checkbox.checked = state.selected.has(row._key);
@@ -369,6 +370,7 @@
 
       cfg.columns.forEach(function (col) {
         const td = document.createElement("td");
+        td.setAttribute("data-label", col.label);
         td.textContent = formatCell(row[col.key]);
         tr.appendChild(td);
       });
